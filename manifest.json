@@ -4,7 +4,7 @@
   "description": "Game de violino estilo Guitar Hero para aprender os hinos: ponha o dedo certo na corda certa, na hora certa.",
   "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#0d0806",
   "theme_color": "#0d0806",
   "lang": "pt-BR",

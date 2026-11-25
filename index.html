@@ -93,6 +93,8 @@ h1{margin:6px 0 4px;font-size:2rem;letter-spacing:.5px;background:linear-gradien
 #staffWrap{flex:0 0 64px;position:relative;background:#0d0a05;border-top:1px solid var(--line)}
 #hw{flex:1;position:relative;min-height:0;touch-action:none;border-top:2px solid var(--gold3)}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#rot{display:none;position:fixed;inset:0;z-index:999;background:#050403;color:var(--gold2);align-items:center;justify-content:center;text-align:center;font-weight:700;padding:24px}
+@media (orientation:landscape) and (max-height:520px){#rot{display:flex}}
 #cdn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5.5rem;font-weight:900;color:var(--gold2);text-shadow:0 0 30px #f2a03d;pointer-events:none}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000d;border:1px solid var(--gold3);padding:10px 16px;border-radius:12px;font-size:.88rem;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s;max-width:88vw;text-align:center}
 .toast.on{opacity:1}
@@ -146,6 +148,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="scroll" id="setBox"></div>
 </div>
 
+<div id="rot">📱 Gire o celular para ficar em pé</div>
 <!-- GAME -->
 <div id="sGame" class="screen">
   <div class="ghud">
@@ -686,6 +689,9 @@ $('rSpd').oninput=e=>{CUR.spd=e.target.value/100;$('rSpdV').textContent=e.target
 $('rCancel').onclick=()=>$('mReady').classList.remove('on');
 $('rGo').onclick=()=>{ $('mReady').classList.remove('on'); startGame(); };
 
+/* ---------- orientação: sempre em pé ---------- */
+function lockPortrait(){try{const o=screen.orientation;if(o&&o.lock)o.lock('portrait').catch(()=>{});}catch(e){}}
+lockPortrait();document.addEventListener('click',lockPortrait,{once:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden)lockPortrait();});
 /* ---------- jogo ---------- */
 let cH,xH,cS,xS,dpr=1,rafId=0,pumpId=0,wake=null;
 function sizeCanvases(){dpr=Math.min(window.devicePixelRatio||1,2.5);
@@ -764,7 +770,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&G.state
 // O que vale é a POSIÇÃO do dedo (corda + altura) na hora da nota. Corda solta = tocar o círculo acima da pestana.
 const HW=()=>WIN[S.win]||1, PTOL={estreita:.5,normal:.7,larga:1};
 function haptic(ms){if(S.vibrate&&navigator.vibrate){try{navigator.vibrate(ms);}catch(e){}}}
-function FBG(){const e=$('cFb'),W=e.clientWidth,H=e.clientHeight,bw=W*.94/4,yN=H*.13,yE=H*.93;
+function FBG(){const e=$('cFb'),W=e.clientWidth,H=e.clientHeight,bw=W*.94/4,yN=H*.085,yE=H*.93;
     return{W,H,bw,yN,yE,xs:i=>W/2+(i-1.5)*bw,yo:o=>yN+(yE-yN)*Math.min(o,OFFMAX)/OFFMAX};}
 function fbTouch(e){const r=$('cFb').getBoundingClientRect(),g=FBG(),x=e.clientX-r.left,y=e.clientY-r.top;
     let s=0,b=1e9;for(let i=0;i<4;i++){const d=Math.abs(x-g.xs(i));if(d<b){b=d;s=i;}}
