@@ -90,7 +90,7 @@ h1{margin:6px 0 4px;font-size:2rem;letter-spacing:.5px;background:linear-gradien
 .gsc small{display:block;font-size:.68rem;color:var(--mut)}
 .prog{height:3px;background:#2a1a0e;flex:0 0 auto}
 .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold3),var(--gold2))}
-#staffWrap{flex:0 0 86px;position:relative;background:#0d0a05;border-bottom:1px solid var(--line)}
+#staffWrap{flex:0 0 64px;position:relative;background:#0d0a05;border-top:1px solid var(--line)}
 #hw{flex:1;position:relative;min-height:0;touch-action:none;border-top:2px solid var(--gold3)}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #cdn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5.5rem;font-weight:900;color:var(--gold2);text-shadow:0 0 30px #f2a03d;pointer-events:none}
@@ -155,8 +155,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <button class="ibtn" id="gPause" aria-label="Pausar">❚❚</button>
   </div>
   <div class="prog"><i id="gProg"></i></div>
-  <div id="staffWrap"><canvas id="cStaff"></canvas></div>
   <div id="hw"><canvas id="cFb"></canvas><div id="cdn"></div></div>
+  <div id="staffWrap"><canvas id="cStaff"></canvas></div>
 </div>
 
 <!-- PRONTO -->
@@ -886,7 +886,7 @@ function stepOf(w,flat){ // w: MIDI escrito → {step,acc}
 function drawStaff(t){
     const c=xS;c.clearRect(0,0,cS.width,cS.height);
     if(!S.staff){return;}
-    const W=cS.width,H=cS.height,sp=H*.1,yb=H*.64;   // yb = linha de baixo (Mi4)
+    const W=cS.width,H=cS.height,sp=H*.108,yb=H*.62;   // yb = linha de baixo (Mi4)
     const flat=((G.key||0)+(TR_TRANS?2:0))<0||((G.key||0)+(TR_TRANS?2:0))>6;
     c.strokeStyle='#8a7a52';c.lineWidth=1*dpr;
     for(let i=0;i<5;i++){const y=yb-i*sp;c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
@@ -946,7 +946,7 @@ function renderSettings(){
     seg('Acompanhamento','As outras vozes tocam sozinhas enquanto você toca a sua.','backing',[[true,'Ligado'],[false,'Desligado']]);
     rng('Volume do acompanhamento',null,'backVol',0,100,5,v=>v+'%');
     rng('Volume geral',null,'vol',10,100,5,v=>v+'%',applyVol);
-    seg('Partitura no topo',null,'staff',[[true,'Mostrar'],[false,'Ocultar']]);
+    seg('Partitura embaixo',null,'staff',[[true,'Mostrar'],[false,'Ocultar']]);
     seg('Vibração ao acertar',null,'vibrate',[[true,'Ligada'],[false,'Desligada']]);
     rng('Ajuste de atraso do som','Se as notas parecem chegar cedo ou tarde demais (fone Bluetooth, por exemplo), ajuste aqui.','latency',-200,400,10,v=>(v>0?'+':'')+v+' ms');
     const d=card('Recordes');const b=document.createElement('button');b.className='danger';b.textContent='Apagar todos os recordes';b.onclick=()=>{if(confirm('Apagar todos os recordes e estrelas?')){store.set('dhg_rec',{});toast('Recordes apagados');}};d.appendChild(b);
