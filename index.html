@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>DH Violino Game</title>
+<meta name="theme-color" content="#0d0806">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="vendor/Tone.js"></script>
+<script>window.Tone||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"><\/script>')</script>
+<script src="pro-config.js"></script>
+<style>
+:root{--gold:#f2a03d;--gold2:#ffe2b8;--gold3:#9a5a1c;--bg:#0d0806;--card:#190f08;--line:#3d2616;--txt:#f6efdc;--mut:#a89d83;--ok:#4be3b5;--bad:#ff6b6b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.screen.on{display:flex}
+.bg{background:radial-gradient(ellipse at 50% -10%,#3b2d0c 0,#0d0806 60%)}
+.top{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.top h2{margin:0;font-size:1.1rem;flex:1;color:var(--gold2)}
+.ibtn{background:#2a1a0e;border:1px solid var(--line);border-radius:12px;min-width:42px;height:42px;font-size:1.2rem;display:flex;align-items:center;justify-content:center;padding:0 12px}
+.ibtn:active{background:#33280f}
+.scroll{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+/* HOME */
+#sHome{align-items:center;justify-content:center;text-align:center;padding:24px}
+.logo{display:flex;gap:12px;justify-content:center;align-items:flex-end;height:60px;margin-bottom:18px}
+.logo i{display:block;border-radius:3px;background:linear-gradient(#ffe2b8,#f2a03d 55%,#9a5a1c);box-shadow:0 0 14px #f2a03d66}
+.logo i:nth-child(1){height:60px;width:7px}.logo i:nth-child(2){height:54px;width:6px}.logo i:nth-child(3){height:48px;width:5px}.logo i:nth-child(4){height:42px;width:4px}
+h1{margin:6px 0 4px;font-size:2rem;letter-spacing:.5px;background:linear-gradient(#ffe2b8,#e8892a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin:0 0 26px;max-width:320px}
+.big{width:min(320px,86vw);padding:16px;border-radius:16px;border:1px solid var(--gold3);background:linear-gradient(#f7b45a,#c8741a);color:#2b1503;font-weight:800;font-size:1.1rem;margin:7px 0;box-shadow:0 5px 0 #6b3a0c}
+.big:active{transform:translateY(4px);box-shadow:0 1px 0 #6b3a0c}
+.big.alt{background:#1d170a;color:var(--gold2);box-shadow:0 5px 0 #000}
+.big.alt:active{box-shadow:0 1px 0 #000}
+.foot{margin-top:22px;font-size:.78rem;color:var(--mut)}
+/* HINOS */
+.search{flex:1;background:#130b06;border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:11px 12px;font-size:1rem;min-width:0;-webkit-user-select:text;user-select:text}
+.hino{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.hino:active{background:#2a1a0e}
+.hino b{color:var(--gold);min-width:2.4em;font-variant-numeric:tabular-nums}
+.hino span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hino small{color:var(--gold);letter-spacing:1px;white-space:nowrap}
+.empty{color:var(--mut);text-align:center;padding:30px 10px}
+/* SETTINGS */
+.set{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.set h3{margin:0 0 2px;font-size:.98rem;color:var(--gold2)}
+.set p{margin:0 0 8px;font-size:.8rem;color:var(--mut)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;padding:10px 8px;border-radius:10px;background:#130b06;border:1px solid var(--line);color:var(--txt);min-width:70px}
+.seg button.on{background:linear-gradient(#f7b45a,#c8741a);color:#2b1503;border-color:var(--gold3);font-weight:700}
+.rng{display:flex;align-items:center;gap:10px}
+.rng input{flex:1;accent-color:var(--gold)}
+.rng output{min-width:56px;text-align:right;color:var(--gold2);font-variant-numeric:tabular-nums}
+.danger{background:#2a1010;border:1px solid #6b2a2a;color:#ffb3b3;border-radius:10px;padding:10px 14px;width:100%}
+/* READY panel */
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;padding:16px;z-index:30}
+.modal.on{display:flex}
+.panel{background:#190f08;border:1px solid var(--gold3);border-radius:18px;padding:18px;width:min(440px,100%);max-height:92dvh;overflow:auto;text-align:center}
+.panel h2{margin:0 0 2px;color:var(--gold2);font-size:1.15rem}
+.panel .hn{color:var(--gold);font-weight:800}
+.panel .lbl{margin:14px 0 6px;font-size:.82rem;color:var(--mut);text-align:left}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{padding:12px 6px;border-radius:12px;background:#130b06;border:1px solid var(--line);line-height:1.2}
+.chip small{display:block;color:var(--mut);font-size:.7rem;margin-top:2px}
+.chip.on{background:linear-gradient(#f7b45a,#c8741a);color:#2b1503;border-color:var(--gold3);font-weight:800}
+.chip.on small{color:#4b3606}
+.chip[disabled]{opacity:.35}
+.badge{display:inline-block;font-size:.74rem;color:var(--mut);margin-top:10px}
+.badge i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#e0a02a;margin-right:6px}
+.badge i.ok{background:var(--ok)}
+.row{display:flex;gap:8px;margin-top:14px}
+.row .big{margin:0;flex:1;width:auto;padding:14px}
+.stars{font-size:2.3rem;letter-spacing:6px;color:var(--gold);margin:4px 0}
+.stat{display:flex;justify-content:space-around;margin:10px 0;gap:6px}
+.stat div{flex:1;background:#130b06;border:1px solid var(--line);border-radius:12px;padding:8px 4px}
+.stat b{display:block;font-size:1.15rem;color:var(--gold2)}
+.stat small{color:var(--mut);font-size:.7rem}
+/* GAME */
+#sGame{background:#050403}
+.ghud{display:flex;align-items:center;gap:8px;padding:6px 10px;flex:0 0 auto;background:linear-gradient(#17120a,#0d0806)}
+.ghud .ibtn{height:38px;min-width:38px;font-size:1.05rem}
+.gt{flex:1;min-width:0;line-height:1.15}
+.gt b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.95rem;color:var(--gold2)}
+.gt small{color:var(--mut);font-size:.72rem}
+.gsc{text-align:right;line-height:1.1}
+.gsc b{font-size:1.15rem;color:var(--gold);font-variant-numeric:tabular-nums}
+.gsc small{display:block;font-size:.68rem;color:var(--mut)}
+.prog{height:3px;background:#2a1a0e;flex:0 0 auto}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold3),var(--gold2))}
+#staffWrap{flex:0 0 86px;position:relative;background:#0d0a05;border-bottom:1px solid var(--line)}
+#hw{flex:1;position:relative;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#cdn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5.5rem;font-weight:900;color:var(--gold2);text-shadow:0 0 30px #f2a03d;pointer-events:none}
+#fbWrap{flex:0 0 auto;position:relative;height:clamp(210px,42dvh,360px);border-top:2px solid var(--gold3);touch-action:none;padding-bottom:env(safe-area-inset-bottom)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000d;border:1px solid var(--gold3);padding:10px 16px;border-radius:12px;font-size:.88rem;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s;max-width:88vw;text-align:center}
+.toast.on{opacity:1}
+.howt{color:var(--txt);text-align:left;font-size:.92rem;line-height:1.5}
+.howt li{margin-bottom:6px}
+.howt b{color:var(--gold2)}
+.load{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:60;color:var(--gold2);font-weight:700}
+.load.on{display:flex}
+/* PRO */
+.hino small.lock{color:var(--mut);font-size:.72rem;letter-spacing:0}
+.pro-top{background:#f2a03d22;border:1px solid var(--gold);border-radius:10px;padding:10px 12px;font-weight:700;margin-bottom:10px;text-align:left}
+.pro-p{font-size:.85rem;line-height:1.5;margin:0 0 12px;text-align:left}
+.pro-small{font-size:.74rem;color:var(--mut);margin-top:6px;line-height:1.45}
+.pro-warn{color:#ff9a6a;font-weight:600}
+.pro-ok{font-size:1.15rem;font-weight:800;color:var(--ok);margin-bottom:8px}
+.pro-step{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);font-size:.85rem;text-align:left}
+.pro-step>span{flex:0 0 26px;height:26px;border-radius:50%;background:var(--gold);color:#2b1503;font-weight:800;display:flex;align-items:center;justify-content:center}
+.pro-step>div{flex:1;min-width:0}
+.pro-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.pro-btn{background:linear-gradient(#f7b45a,#c8741a);color:#2b1503;border:none;border-radius:10px;padding:10px 14px;font-weight:800;font-size:.85rem;text-decoration:none;display:inline-block}
+.pro-btn.sec{background:#1d170a;color:var(--gold2);border:1px solid var(--line)}
+.pro-btn:disabled{opacity:.6}
+.pro-code{flex:1;min-width:140px;padding:10px 11px;border-radius:10px;border:1px solid var(--line);background:#130b06;color:var(--txt);font:700 15px monospace;letter-spacing:1px;text-transform:uppercase;-webkit-user-select:text;user-select:text}
+.pro-msg{font-size:.78rem;margin-top:6px;min-height:16px;color:var(--mut);text-align:left}
+.pro-msg.err{color:var(--bad);font-weight:600}
+</style>
+</head>
+<body>
+<!-- HOME -->
+<div id="sHome" class="screen bg on">
+  <div class="logo"><i></i><i></i><i></i><i></i></div>
+  <h1>DH Violino Game</h1>
+  <p class="sub">Coloque o dedo indicado no lugar certo da corda, na hora certa, e ouça o hino acontecer no violino.</p>
+  <button class="big" id="bPlay">▶ Escolher hino</button>
+  <button class="big alt" id="bLast" style="display:none"></button>
+  <button class="big alt" id="bPro">⭐ Pro</button>
+  <button class="big alt" id="bSet">⚙ Configurações</button>
+  <button class="big alt" id="bHow">❓ Como jogar</button>
+  <div class="foot">Hinos 1 a 480 · soprano, contralto, tenor e baixo</div>
+</div>
+
+<!-- HINOS -->
+<div id="sHinos" class="screen bg">
+  <div class="top"><button class="ibtn" data-back>‹</button><input id="q" class="search" type="search" placeholder="Número ou título do hino" inputmode="search" autocomplete="off"><button class="ibtn" id="hPro" aria-label="Pro">⭐</button></div>
+  <div class="scroll" id="hList"></div>
+</div>
+
+<!-- CONFIG -->
+<div id="sSet" class="screen bg">
+  <div class="top"><button class="ibtn" data-back>‹</button><h2>Configurações</h2></div>
+  <div class="scroll" id="setBox"></div>
+</div>
+
+<!-- GAME -->
+<div id="sGame" class="screen">
+  <div class="ghud">
+    <button class="ibtn" id="gExit" aria-label="Sair">✕</button>
+    <div class="gt"><b id="gTitle"></b><small id="gSub"></small></div>
+    <div class="gsc"><b id="gScore">0</b><small id="gAcc">100%</small></div>
+    <button class="ibtn" id="gPause" aria-label="Pausar">❚❚</button>
+  </div>
+  <div class="prog"><i id="gProg"></i></div>
+  <div id="staffWrap"><canvas id="cStaff"></canvas></div>
+  <div id="hw"><canvas id="cHw"></canvas><div id="cdn"></div></div>
+  <div id="fbWrap"><canvas id="cFb"></canvas></div>
+</div>
+
+<!-- PRONTO -->
+<div id="mReady" class="modal">
+  <div class="panel">
+    <h2><span class="hn" id="rN"></span> <span id="rT"></span></h2>
+    <div class="lbl">Qual voz você quer aprender?</div>
+    <div class="chips" id="rVoices"></div>
+    <div class="lbl">Velocidade: <b id="rSpdV">100%</b></div>
+    <div class="rng"><input type="range" id="rSpd" min="40" max="120" step="5"></div>
+    <div class="lbl">Modo</div>
+    <div class="seg" id="rMode"></div>
+    <div class="badge" id="rSnd"><i></i>Carregando som…</div>
+    <div class="row"><button class="big alt" id="rCancel">Voltar</button><button class="big" id="rGo">▶ Jogar</button></div>
+  </div>
+</div>
+
+<!-- PAUSA -->
+<div id="mPause" class="modal">
+  <div class="panel">
+    <h2>Pausado</h2>
+    <div class="row"><button class="big" id="pResume">▶ Continuar</button></div>
+    <div class="row"><button class="big alt" id="pRestart">↺ Recomeçar</button><button class="big alt" id="pQuit">Sair</button></div>
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div id="mEnd" class="modal">
+  <div class="panel">
+    <h2 id="eT">Hino concluído</h2>
+    <div class="stars" id="eStars"></div>
+    <div class="stat"><div><b id="eScore">0</b><small>Pontos</small></div><div><b id="eAcc">0%</b><small>Precisão</small></div><div><b id="eCombo">0</b><small>Maior combo</small></div></div>
+    <div id="eBest" class="badge"></div>
+    <div class="row"><button class="big" id="eAgain">↺ Jogar de novo</button></div>
+    <div class="row"><button class="big alt" id="eVoice">Trocar voz</button><button class="big alt" id="eList">Hinos</button></div>
+  </div>
+</div>
+
+<!-- COMO JOGAR -->
+<div id="mHow" class="modal">
+  <div class="panel">
+    <h2>Como jogar</h2>
+    <ol class="howt">
+      <li>As <b>notas descem</b> por 4 pistas, uma para cada <b>corda</b> (Sol · Ré · Lá · Mi). O número mostra o <b>dedo</b> (1 a 4).</li>
+      <li>Embaixo está o <b>braço do violino</b>. O círculo colorido mostra <b>onde</b> pôr o dedo: toque nele e segure.</li>
+      <li>Quando a nota chegar na <b>linha dourada</b>, seu dedo precisa estar no lugar. Não precisa bater: o jogo reconhece a posição.</li>
+      <li><b>Corda solta (0)</b>: toque no círculo vazio acima da pestana (parte de cima da corda).</li>
+      <li>Pode <b>deslizar</b> o dedo de uma nota para a outra, sem soltar.</li>
+      <li>Ao acertar, a nota <b>toca</b>. As outras vozes tocam sozinhas ao fundo. Tenor e baixo sobem uma oitava.</li>
+    </ol>
+    <div class="row"><button class="big" id="hClose">Entendi</button></div>
+  </div>
+</div>
+
+<!-- PRO -->
+<div id="mPro" class="modal">
+  <div class="panel">
+    <h2>⭐ DH Violino Game Pro</h2>
+    <div id="proBody" style="margin-top:12px"></div>
+    <div class="row"><button class="big alt" id="proClose">Fechar</button></div>
+  </div>
+</div>
+
+<div class="load" id="load">Carregando hino…</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ======================== MUSICXML (.xml / .musicxml / .mxl) ======================== */
+const SATB_NAMES=['Soprano','Contralto','Tenor','Baixo'];
+
+// ---- ZIP: o .mxl é um ZIP com o XML da partitura dentro ----
+function zipEntries(buf){
+    const u8=new Uint8Array(buf), dv=new DataView(buf);
+    let e=u8.length-22; while(e>=0&&dv.getUint32(e,true)!==0x06054b50) e--;
+    if(e<0) throw new Error('Arquivo .mxl inválido');
+    const n=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true); const out=[];
+    for(let i=0;i<n;i++){
+        if(dv.getUint32(p,true)!==0x02014b50) break;
+        const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), usize=dv.getUint32(p+24,true);
+        const nl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), lho=dv.getUint32(p+42,true);
+        out.push({name:new TextDecoder().decode(u8.subarray(p+46,p+46+nl)),method,csize,usize,lho});
+        p+=46+nl+el+cl;
+    }
+    return {u8,dv,out};
+}
+async function zipRead(z,ent){
+    const {u8,dv}=z, p=ent.lho, start=p+30+dv.getUint16(p+26,true)+dv.getUint16(p+28,true);
+    const data=u8.subarray(start,start+ent.csize);
+    if(ent.method===0) return data;
+    if(ent.method!==8) throw new Error('Compressão não suportada');
+    if(typeof DecompressionStream==='function'){
+        try{ const r=new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))); return new Uint8Array(await r.arrayBuffer()); }catch(e){}
+    }
+    return inflateRaw(data,ent.usize);
+}
+// descompactador próprio (reserva, para WebViews antigos sem DecompressionStream)
+function inflateRaw(src,usize){
+    const LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],
+          LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0],
+          DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],
+          DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13],
+          ORD=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+    let out=new Uint8Array(usize||src.length*4), op=0, ip=0, bit=0, bc=0;
+    const grow=n=>{ if(op+n>out.length){ const t=new Uint8Array(Math.max(out.length*2,op+n)); t.set(out); out=t; } };
+    const bits=n=>{ while(bc<n){ bit|=src[ip++]<<bc; bc+=8; } const v=bit&((1<<n)-1); bit>>>=n; bc-=n; return v; };
+    const build=lens=>{ const count=new Uint16Array(16), symbol=new Uint16Array(lens.length), offs=new Uint16Array(16);
+        for(let i=0;i<lens.length;i++) count[lens[i]]++; count[0]=0;
+        for(let i=1;i<16;i++) offs[i]=offs[i-1]+count[i-1];
+        for(let s=0;s<lens.length;s++) if(lens[s]) symbol[offs[lens[s]]++]=s;
+        return {count,symbol}; };
+    const decode=h=>{ let code=0,first=0,index=0; for(let len=1;len<16;len++){ code|=bits(1); const c=h.count[len]; if(code-c<first) return h.symbol[index+(code-first)]; index+=c; first+=c; first<<=1; code<<=1; } throw new Error('inflate'); };
+    let last;
+    do{
+        last=bits(1); const type=bits(2);
+        if(type===0){ bit=0; bc=0; const len=src[ip]|(src[ip+1]<<8); ip+=4; grow(len); out.set(src.subarray(ip,ip+len),op); op+=len; ip+=len; }
+        else if(type===3) throw new Error('inflate');
+        else{
+            let lh,dh;
+            if(type===1){ const l=new Uint8Array(288); for(let i=0;i<288;i++) l[i]=i<144?8:i<256?9:i<280?7:8; lh=build(l); dh=build(new Uint8Array(30).fill(5)); }
+            else{
+                const nl=bits(5)+257, nd=bits(5)+1, nc=bits(4)+4, cl=new Uint8Array(19);
+                for(let i=0;i<nc;i++) cl[ORD[i]]=bits(3);
+                const ch=build(cl), lens=new Uint8Array(nl+nd); let i=0;
+                while(i<nl+nd){ const s=decode(ch); if(s<16) lens[i++]=s; else{ let rep,val=0; if(s===16){ val=lens[i-1]; rep=3+bits(2); } else if(s===17) rep=3+bits(3); else rep=11+bits(7); while(rep--) lens[i++]=val; } }
+                lh=build(lens.subarray(0,nl)); dh=build(lens.subarray(nl));
+            }
+            for(;;){
+                const s=decode(lh);
+                if(s<256){ grow(1); out[op++]=s; }
+                else if(s===256) break;
+                else{ const li=s-257, len=LB[li]+bits(LE[li]), ds=decode(dh), dist=DB[ds]+bits(DE[ds]); grow(len); for(let k=0;k<len;k++){ out[op]=out[op-dist]; op++; } }
+            }
+        }
+    }while(!last);
+    return out.subarray(0,op);
+}
+function decodeXml(u8){
+    if(u8[0]===0xFF&&u8[1]===0xFE) return new TextDecoder('utf-16le').decode(u8);
+    if(u8[0]===0xFE&&u8[1]===0xFF) return new TextDecoder('utf-16be').decode(u8);
+    let enc='utf-8'; const m=/encoding\s*=\s*["']([\w-]+)/i.exec(String.fromCharCode.apply(null,u8.subarray(0,200)));
+    if(m) enc=m[1];
+    try{ return new TextDecoder(enc).decode(u8).replace(/^\uFEFF/,''); }catch(e){ return new TextDecoder('utf-8').decode(u8).replace(/^\uFEFF/,''); }
+}
+async function readScoreXmlText(buf){
+    const u8=new Uint8Array(buf);
+    if(u8[0]===0x50&&u8[1]===0x4B){
+        const z=zipEntries(buf); let target=null;
+        const cont=z.out.find(e=>/^META-INF\/container\.xml$/i.test(e.name));
+        if(cont){ const m=/full-path\s*=\s*["']([^"']+)["']/.exec(decodeXml(await zipRead(z,cont))); if(m) target=z.out.find(e=>e.name===m[1]); }
+        if(!target) target=z.out.find(e=>/\.(xml|musicxml)$/i.test(e.name)&&!/^META-INF\//i.test(e.name));
+        if(!target) throw new Error('Nenhuma partitura dentro do .mxl');
+        return decodeXml(await zipRead(z,target));
+    }
+    return decodeXml(u8);
+}
+
+// ---- MusicXML (partwise) → notas {midi,startTime,endTime,duration,velocity,track} ----
+function parseMusicXML(text){
+    const doc=new DOMParser().parseFromString(text,'application/xml');
+    if(doc.getElementsByTagName('parsererror').length) throw new Error('XML inválido');
+    const root=doc.documentElement;
+    if(root.nodeName==='score-timewise') throw new Error('MusicXML "timewise" não suportado — exporte como "partwise"');
+    if(root.nodeName!=='score-partwise') throw new Error('Não é um arquivo MusicXML');
+    const ch=(el,n)=>{ const r=[]; for(const c of el.children) if(c.nodeName===n) r.push(c); return r; };
+    const c1=(el,n)=>{ for(const c of el.children) if(c.nodeName===n) return c; return null; };
+    const tx=(el,n)=>{ const c=el&&c1(el,n); return c?c.textContent.trim():''; };
+    const nm=(el,n,d)=>{ const v=parseFloat(tx(el,n)); return isFinite(v)?v:d; };
+    const STEP={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+    const DYN={ppp:.3,pp:.4,p:.5,mp:.6,mf:.7,f:.8,ff:.9,fff:.97,sf:.9,sfz:.9,fp:.8};
+    const pnames={}; const pl=c1(root,'part-list');
+    if(pl) ch(pl,'score-part').forEach(sp=>{ pnames[sp.getAttribute('id')]=tx(sp,'part-name')||tx(sp,'part-abbreviation'); });
+    const parts=ch(root,'part'), MI=[], evs=[];
+    const tempoOf=e=>{
+        const snd=e.nodeName==='sound'?e:c1(e,'sound');
+        if(snd&&snd.getAttribute('tempo')) return parseFloat(snd.getAttribute('tempo'));
+        const met=e.getElementsByTagName('metronome')[0];
+        if(met){ const pm=parseFloat(tx(met,'per-minute')); if(pm>0){ let q={whole:4,half:2,quarter:1,eighth:.5,'16th':.25}[tx(met,'beat-unit')]||1; if(c1(met,'beat-unit-dot')) q*=1.5; return pm*q; } }
+        return 0;
+    };
+    parts.forEach((part,pi)=>{
+        let div=1,beats=4,bt=4,trans=0,vel=.7;
+        ch(part,'measure').forEach((m,mi)=>{
+            const info=MI[mi]||(MI[mi]={ext:0,nom:4,fwd:false,bwd:false,volta:null,tempos:[],implicit:false});
+            if(m.getAttribute('implicit')==='yes') info.implicit=true;
+            let cur=0,lastOn=0,ext=0;
+            for(const e of m.children){
+                const t=e.nodeName;
+                if(t==='attributes'){
+                    const d=nm(e,'divisions',0); if(d>0) div=d;
+                    const ti=c1(e,'time'); if(ti){ beats=parseInt(tx(ti,'beats'))||beats; bt=parseInt(tx(ti,'beat-type'))||bt; if(!info.time) info.time=beats+'/'+bt; }
+                    const k=c1(e,'key'); if(k&&info.fifths===undefined){ const f=parseInt(tx(k,'fifths')); if(isFinite(f)) info.fifths=f; }
+                    const tr=c1(e,'transpose'); if(tr) trans=(parseInt(tx(tr,'chromatic'))||0)+12*(parseInt(tx(tr,'octave-change'))||0);
+                } else if(t==='direction'||t==='sound'){
+                    const bpm=tempoOf(e); if(bpm>0&&pi===0) info.tempos.push({pos:cur/div,bpm});
+                    if(t==='direction'){ const dy=e.getElementsByTagName('dynamics')[0]; if(dy) for(const d of dy.children) if(DYN[d.nodeName]) vel=DYN[d.nodeName]; }
+                } else if(t==='backup') cur-=nm(e,'duration',0);
+                else if(t==='forward'){ cur+=nm(e,'duration',0); ext=Math.max(ext,cur); }
+                else if(t==='barline'){
+                    const rp=c1(e,'repeat'); if(rp){ if(rp.getAttribute('direction')==='forward') info.fwd=true; else info.bwd=true; }
+                    const en=c1(e,'ending'); if(en){
+                        if(en.getAttribute('type')==='start'){
+                            let nums=(en.getAttribute('number')||'1').split(/[ ,]+/).map(s=>parseInt(s)).filter(x=>x>0);
+                            // alguns programas gravam number="2" mas o rótulo impresso é "1.2." → vale o rótulo (senão a 1ª casa seria pulada)
+                            const lab=(en.textContent||'').trim();
+                            if(/^\d+(\s*[.,;\-–]\s*\d+)*\s*\.?$/.test(lab)){
+                                const ex=new Set();
+                                lab.replace(/\.$/,'').split(/\s*[.,;]\s*/).forEach(t=>{ const r=t.split(/\s*[\-–]\s*/).map(x=>parseInt(x)).filter(x=>x>0); if(r.length===2) for(let q=r[0];q<=r[1];q++) ex.add(q); else r.forEach(q=>ex.add(q)); });
+                                if(ex.size) nums=[...ex].sort((a,b)=>a-b);
+                            }
+                            info.endStart=nums;
+                        } else { info.endStop=true; info.endNums=(en.getAttribute('number')||'').split(/[ ,]+/).map(x=>parseInt(x)).filter(x=>x>0); }
+                    }
+                } else if(t==='note'){
+                    if(c1(e,'grace')) continue;
+                    const isChord=!!c1(e,'chord'), dur=nm(e,'duration',0), on=isChord?lastOn:cur;
+                    if(!isChord) lastOn=cur;
+                    const pitch=c1(e,'pitch');
+                    if(pitch&&!c1(e,'rest')&&!c1(e,'cue')&&dur>0&&STEP[tx(pitch,'step')]!==undefined){
+                        const midi=STEP[tx(pitch,'step')]+Math.round(nm(pitch,'alter',0))+(parseInt(tx(pitch,'octave'))+1)*12+trans;
+                        let ties=ch(e,'tie').map(x=>x.getAttribute('type'));
+                        if(!ties.length){ const nt=c1(e,'notations'); if(nt) ties=ch(nt,'tied').map(x=>x.getAttribute('type')); }
+                        evs.push({part:pi,staff:parseInt(tx(e,'staff'))||1,voice:parseInt(tx(e,'voice'))||1,midi,mi,on:on/div,dur:dur/div,tS:ties.includes('start'),tE:ties.includes('stop'),vel,stem:tx(e,'stem')});
+                    }
+                    if(!isChord) cur+=dur;
+                    ext=Math.max(ext,cur);
+                }
+            }
+            info.ext=Math.max(info.ext,ext/div); info.nom=beats*4/bt;
+        });
+    });
+    const n=MI.length; if(!n) throw new Error('Nenhum compasso encontrado');
+    const len=MI.map(m=>m.ext>1e-6?m.ext:m.nom);
+    // se a casa fecha sem ter sido aberta (falha em alguns arquivos), o próprio compasso vale como essa casa
+    let open=null; MI.forEach(m=>{ if(m.endStart) open=m.endStart; m.volta=(!open&&m.endStop&&m.endNums&&m.endNums.length)?m.endNums:open; if(m.endStop) open=null; });
+    // ordem de execução (repetições e casas 1ª/2ª)
+    const order=[]; { let i=0,secStart=0,pass=1,jumped=false,guard=0; const taken=new Set();
+        while(i<n&&guard++<n*12){
+            const m=MI[i];
+            if(m.fwd&&!(jumped&&i===secStart)){ secStart=i; pass=1; }
+            jumped=false;
+            if(m.volta&&!m.volta.includes(pass)){ i++; continue; }
+            order.push(i);
+            if(m.bwd){
+                if(!taken.has(i)){ taken.add(i); i=secStart; pass++; jumped=true; continue; }
+                // repetição esgotada: se logo depois vem uma casa de número maior (ex.: casa 1.2. e depois casa 3.), a passada continua contando
+                // (senão a 3ª casa — a última nota da estrofe antes do coro — era pulada). Caso contrário, começa uma seção nova.
+                const nx=MI[i+1]; secStart=i+1;
+                if(nx&&nx.endStart&&nx.endStart.some(q=>q>pass)) pass++; else pass=1;
+            }
+            i++;
+        } }
+    if(!order.length) for(let i=0;i<n;i++) order.push(i);
+    const byM=Array.from({length:n},()=>[]); evs.forEach(e=>byM[e.mi].push(e));
+    let acc=0, abs=[], tempos=[];
+    order.forEach(mi=>{
+        MI[mi].tempos.forEach(t=>tempos.push({q:acc+t.pos,bpm:t.bpm}));
+        byM[mi].forEach(e=>abs.push({...e,s:acc+e.on,e:acc+e.on+e.dur}));
+        acc+=len[mi];
+    });
+    tempos.sort((a,b)=>a.q-b.q);
+    if(!tempos.length||tempos[0].q>0) tempos.unshift({q:0,bpm:tempos.length?tempos[0].bpm:120});
+    const tm=[]; let sec=0;
+    tempos.forEach((t,i)=>{ if(i>0){ const p=tempos[i-1]; sec+=(t.q-p.q)*60/p.bpm; } tm.push({q:t.q,s:sec,bpm:t.bpm}); });
+    const toSec=q=>{ let k=tm.length-1; while(k>0&&tm[k].q>q+1e-9) k--; return tm[k].s+(q-tm[k].q)*60/tm[k].bpm; };
+    // ligaduras de prolongamento
+    abs.sort((a,b)=>a.s-b.s);
+    const pend=new Map(), merged=[];
+    abs.forEach(x=>{
+        const k=x.part+'|'+x.staff+'|'+x.voice+'|'+x.midi, p=pend.get(k);
+        if(x.tE&&p&&Math.abs(p.e-x.s)<.06){ p.e=x.e; if(!x.tS) pend.delete(k); return; }
+        const nn={part:x.part,staff:x.staff,voice:x.voice,midi:x.midi,s:x.s,e:x.e,vel:x.vel,stem:x.stem};
+        merged.push(nn); if(x.tS) pend.set(k,nn); else pend.delete(k);
+    });
+    // ---- Reconhecimento SATB pela pauta (como nos hinários) ----
+    // pauta de cima: soprano (nota de cima / haste para cima) e contralto (nota de baixo / haste para baixo)
+    // pauta de baixo: tenor (nota de cima / haste para cima) e baixo (nota de baixo / haste para baixo)
+    const GR=new Map(); merged.forEach(x=>{ const k=x.part+'|'+x.staff; if(!GR.has(k)) GR.set(k,{part:x.part,staff:x.staff,notes:[]}); GR.get(k).notes.push(x); });
+    const grp=[...GR.values()].sort((a,b)=>a.part-b.part||a.staff-b.staff);
+    const avgN=ns=>ns.reduce((a,x)=>a+x.midi,0)/ns.length;
+    const splitStaff=g=>{
+        const vs=[...new Set(g.notes.map(x=>x.voice))].sort((a,b)=>a-b), topV=vs[0];
+        const byOn=new Map(); g.notes.forEach(x=>{ const k=x.s.toFixed(3); if(!byOn.has(k)) byOn.set(k,[]); byOn.get(k).push(x); });
+        const up=[], dn=[], sr=x=>x.stem==='up'?0:x.stem==='down'?2:1;
+        byOn.forEach(a=>{
+            if(a.length>=2){
+                a.sort((p,q)=>q.midi-p.midi||sr(p)-sr(q)||p.voice-q.voice);
+                a.forEach((x,i)=>{ if(i===0) up.push(x); else if(i===a.length-1) dn.push(x); else (x.stem==='down'?dn:up).push(x); });
+            } else {
+                const x=a[0];
+                if(x.stem==='double'){ up.push(x); dn.push({...x,dup:true}); }
+                else if(x.stem==='down') dn.push(x);
+                else if(x.stem==='up') up.push(x);
+                else (vs.length>1&&x.voice!==topV?dn:up).push(x);   // sem haste: voz 1 = cima, demais = baixo; nota única = cima
+            }
+        });
+        return [up,dn];
+    };
+    let lines, voiceNames, byStaff=false;
+    if(grp.length===2){
+        if(avgN(grp[1].notes)>avgN(grp[0].notes)) grp.reverse();
+        lines=[...splitStaff(grp[0]),...splitStaff(grp[1])].map((ns,i)=>({part:0,staff:i,voice:i,notes:ns}));
+        voiceNames=SATB_NAMES.slice(); byStaff=true;
+    }
+    if(!byStaff){
+    // linhas melódicas = (parte, pauta, voz)
+    const L=new Map(); merged.forEach(x=>{ const k=x.part+'|'+x.staff+'|'+x.voice; if(!L.has(k)) L.set(k,{part:x.part,staff:x.staff,voice:x.voice,notes:[]}); L.get(k).notes.push(x); });
+    lines=[...L.values()].sort((a,b)=>a.part-b.part||a.staff-b.staff||a.voice-b.voice);
+    if(!lines.length) throw new Error('Nenhuma nota encontrada');
+    const perPart={}; lines.forEach(l=>perPart[l.part]=(perPart[l.part]||0)+1);
+    if(lines.length<4){ // acordes dentro de uma voz (ex.: soprano+contralto na mesma pauta) → separa por altura
+        lines=lines.flatMap(l=>{
+            const g=new Map(); l.notes.forEach(x=>{ const k=x.s.toFixed(3); if(!g.has(k)) g.set(k,[]); g.get(k).push(x); });
+            const mx=Math.min(4,Math.max(...[...g.values()].map(a=>a.length)));
+            if(mx<=1) return [l];
+            const subs=Array.from({length:mx},()=>({part:l.part,staff:l.staff,voice:l.voice,notes:[],split:true}));
+            g.forEach(a=>{ a.sort((p,q)=>q.midi-p.midi); subs.forEach((s,r)=>s.notes.push({...a[Math.min(r,a.length-1)],dup:r>=a.length})); });
+            return subs;
+        });
+    }
+    const avg=l=>l.notes.reduce((a,x)=>a+x.midi,0)/l.notes.length;
+    const cls=s=>{ s=(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); return /sopran/.test(s)?0:/contralt|alto/.test(s)||/^a\.?$/.test(s)?1:/tenor/.test(s)||/^t\.?$/.test(s)?2:/bass|baix/.test(s)||/^b\.?$/.test(s)?3:-1; };
+        if(lines.length===4){
+        const cs=lines.map(l=>perPart[l.part]===1&&!l.split?cls(pnames[parts[l.part].getAttribute('id')]):-1);
+        if(cs.every(c=>c>=0)&&new Set(cs).size===4) lines=cs.map((c,i)=>[c,lines[i]]).sort((a,b)=>a[0]-b[0]).map(a=>a[1]);
+        else lines.sort((a,b)=>avg(b)-avg(a));
+        voiceNames=SATB_NAMES.slice();
+    } else {
+        lines.sort((a,b)=>avg(b)-avg(a));
+        if(lines.length>8){ const extra=lines.splice(7); extra.forEach(l=>lines[6].notes.push(...l.notes)); }
+        voiceNames=lines.map((_,i)=>'Voz '+(i+1));
+    }
+    }
+    const notes=[];
+    lines.forEach((l,v)=>l.notes.forEach(x=>{ const a=toSec(x.s), b=toSec(x.e); if(b-a>.01) notes.push({midi:Math.max(0,Math.min(127,x.midi)),startTime:a,endTime:b,duration:b-a,velocity:x.vel,track:v,dup:!!x.dup}); }));
+    notes.sort((a,b)=>a.startTime-b.startTime);
+    if(!notes.length) throw new Error('Nenhuma nota encontrada');
+    const first=f=>{ const m=MI.find(x=>x[f]!==undefined); return m?m[f]:null; };
+    const _l0=len[order[0]], _nom=MI[order[0]].nom, pickup=(_l0>1e-6&&_nom&&_l0<_nom-0.01)?_nom-_l0:0;   // compasso de anacruse (incompleto)
+    return {notes,duration:Math.max(...notes.map(x=>x.endTime)),bpm:tm[0].bpm,key:first('fifths'),timeSig:first('time'),voiceNames,tm,pickup};
+}
+function isMidiBuf(buf){ const u=new Uint8Array(buf,0,Math.min(4,buf.byteLength)); return u[0]===0x4D&&u[1]===0x54&&u[2]===0x68&&u[3]===0x64; }
+async function parseAnyScore(buf){ return isMidiBuf(buf)?parseMidiFile(buf):parseMusicXML(await readScoreXmlText(buf)); }
+
+</script>
+<script>
+/* ======================== DigitaHinos Game ======================== */
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),2600);}
+
+/* ---------- configurações ---------- */
+const SET_DEF={voice:0,key:'sib',speed:100,mode:'normal',fall:'normal',win:'normal',names:'solfa',ptol:'normal',backing:true,backVol:55,vol:90,staff:true,vibrate:true,latency:0};
+const S=Object.assign({},SET_DEF,store.get('dhg_set',{}));
+const saveS=()=>store.set('dhg_set',S);
+
+/* ---------- violino: corda + dedo (mesma regra do app DigitaHinos Violino) ---------- */
+const SOL=['Dó','Dó♯','Ré','Mi♭','Mi','Fá','Fá♯','Sol','Sol♯','Lá','Si♭','Si'];
+const CIF=['C','C♯','D','E♭','E','F','F♯','G','G♯','A','B♭','B'];
+const TR_TRANS=0, VOPEN=[55,62,69,76], VLO=55, VHI=103, OFFMAX=9.5;   // cordas soltas Sol3 Ré4 Lá4 Mi5; braço mostra 0 a 9,5 semitons (1ª posição)
+const PCL=[0,2,4,5,7,9,11],KSS=[3,0,4,1,5,2,6],KSF=[6,2,5,1,4,0,3];
+let KEY={n:0,flat:false},KSIG=[0,0,0,0,0,0,0];
+function vSetKey(f){f=f|0;KEY={n:Math.min(7,Math.abs(f)),flat:f<0};KSIG=[0,0,0,0,0,0,0];for(let i=0;i<KEY.n;i++)KSIG[(KEY.flat?KSF:KSS)[i]]=KEY.flat?-1:1;}
+function spellMidi(m){const pc=((m%12)+12)%12;
+    for(let l=0;l<7;l++)if(KSIG[l]&&((PCL[l]+KSIG[l]+12)%12)===pc)return{l,o:Math.floor((m-KSIG[l])/12)-1};
+    const i=PCL.indexOf(pc);if(i>=0)return{l:i,o:Math.floor(m/12)-1};
+    if(KEY.flat)return{l:PCL.indexOf((pc+1)%12),o:Math.floor((m+1)/12)-1};
+    return{l:PCL.indexOf((pc+11)%12),o:Math.floor((m-1)/12)-1};}
+// corda mais aguda que alcança a nota; dedo = nota natural seguinte (1-2-3-4) a partir da corda solta; sustenido/bemol mantém o dedo
+function violinFinger(m){const sp=spellMidi(m),d=sp.o*7+sp.l;
+    for(let i=3;i>=0;i--){const op=VOPEN[i];if(m<op)continue;
+        const k=d-((Math.floor(op/12)-1)*7+PCL.indexOf(op%12));if(k<0)continue;
+        const off=m-op;return{s:i,off,f:off===0?0:(k===0?1:((k-1)%4)+1)};}
+    return{s:0,off:Math.max(0,m-VLO),f:1};}
+// encaixa a nota no violino (e abaixo do fim do braço mostrado)
+function vPitch(m){while(m>VHI)m-=12;while(m<VLO)m+=12;let g=violinFinger(m);while(g.off>OFFMAX&&m-12>=VLO){m-=12;g=violinFinger(m);}return m;}
+function noteName(m){const sp=spellMidi(m),a=m-(PCL[sp.l]+(sp.o+1)*12);return (S.names==='cifra'?'CDEFGAB':['Dó','Ré','Mi','Fá','Sol','Lá','Si'])[sp.l]+(a>0?'♯':a<0?'♭':'');}   // grafia segue a armadura do hino
+function toneName(m){return ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][m%12]+(Math.floor(m/12)-1);}
+function voiceShift(nm){const k=String(nm||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();return /^(tenor|baixo|bass)$/.test(k)?12:0;}
+
+/* ---------- navegação ---------- */
+const SCREENS=['sHome','sHinos','sSet','sGame'];
+function show(id){SCREENS.forEach(s=>$(s).classList.toggle('on',s===id));}
+function go(id){history.pushState({s:id},'');show(id);if(id==='sHinos')renderHinos();if(id==='sSet')renderSettings();}
+function back(){history.back();}
+function closeModals(){document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'));}
+window.addEventListener('popstate',e=>{
+    let to=(e.state&&e.state.s)||'sHome';
+    const inGame=$('sGame').classList.contains('on');
+    if(inGame&&to!=='sGame'&&G&&(G.state==='play'||G.state==='pause')){history.pushState({s:'sGame'},'');if(G.state==='play')pauseGame();return;}   // voltar durante o jogo = pausa
+    if(to==='sGame'&&(!G||G.state==='idle'))to='sHinos';
+    closeModals();stopGame();show(to);
+    if(to==='sHinos')renderHinos();if(to==='sSet')renderSettings();
+});
+history.replaceState({s:'sHome'},'');
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=back);
+
+/* ---------- lista de hinos ---------- */
+let HINOS=null;
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const REC=()=>store.get('dhg_rec',{});
+async function loadList(){ if(HINOS) return; try{HINOS=await (await fetch('hinos/index.json')).json();}catch(e){HINOS=null;} }
+function bestStars(n){const r=REC();let b=0;for(const k in r){if(k.startsWith(n+':'))b=Math.max(b,r[k].stars||0);}return b;}
+async function renderHinos(){
+    await loadList();
+    const box=$('hList'),q=norm($('q').value).trim();box.innerHTML='';
+    if(!HINOS){box.innerHTML='<div class="empty">'+(location.protocol==='file:'?'Abra o app por um endereço http (GitHub Pages ou servidor local) para carregar os hinos.':'Não foi possível carregar a lista de hinos.')+'</div>';return;}
+    const qn=q.replace(/^0+(?=\d)/,'');
+    const list=HINOS.filter(h=>!q||String(h.n)===qn||String(h.n).padStart(3,'0').includes(q)||norm(h.t).includes(q));
+    if(!list.length){box.innerHTML='<div class="empty">Nenhum hino encontrado.</div>';return;}
+    const fr=document.createDocumentFragment();
+    list.forEach(h=>{const b=document.createElement('button');b.className='hino';const st=bestStars(h.n);
+        const lock=!PRO.ok&&h.n>proFree()&&!proAdActive(h.n);
+        b.innerHTML='<b>'+String(h.n).padStart(3,'0')+'</b><span></span>'+(lock?'<small class="lock">🔒 '+PRO_CFG.previewSec+'s</small>':'')+(st?'<small>'+'★'.repeat(st)+'</small>':'');
+        b.children[1].textContent=h.t;b.onclick=()=>openReady(h);fr.appendChild(b);});
+    box.appendChild(fr);
+}
+$('q').addEventListener('input',renderHinos);
+
+/* ---------- carregar e analisar o hino ---------- */
+const SCORES=new Map();
+async function loadScore(h){
+    if(SCORES.has(h.f)) return SCORES.get(h.f);
+    const r=await fetch('hinos/'+h.f); if(!r.ok) throw new Error('arquivo não encontrado');
+    const sc=parseMusicXML(await readScoreXmlText(await r.arrayBuffer()));
+    SCORES.set(h.f,sc); return sc;
+}
+function voicesOf(sc){
+    const ids=[...new Set(sc.notes.map(n=>n.track||0))].sort((a,b)=>a-b);
+    return ids.map((id,i)=>({id,name:(sc.voiceNames&&sc.voiceNames[id])||(ids.length===4?SATB_NAMES[i]:'Voz '+(i+1))}));
+}
+// transforma uma nota do hino em nota tocável no trompete (som real)
+function trNote(n,vname){return vPitch(n.midi+voiceShift(vname));}
+function buildChart(sc,vid,spd){
+    const vs=voicesOf(sc),vn=(vs.find(v=>v.id===vid)||{}).name;
+    let ns=sc.notes.filter(n=>(n.track||0)===vid&&!n.dup).map(n=>({s:n.startTime,e:n.endTime,m:trNote(n,vn),vel:n.velocity||.8}));
+    ns.sort((a,b)=>a.s-b.s||b.m-a.m);
+    const out=[];
+    ns.forEach(n=>{ const last=out[out.length-1]; if(last&&Math.abs(last.s-n.s)<0.02)return; out.push(n); });   // só uma nota por instante
+    const f=1/spd;
+    return out.map((n,i)=>{const nx=out[i+1];let e=n.e;if(nx&&e>nx.s)e=nx.s;
+        return Object.assign({t:n.s*f,d:Math.max(0.1,(e-n.s)*f),m:n.m,vel:n.vel,st:0},violinFinger(n.m));});
+}
+function buildBacking(sc,vid,spd){
+    const vs=voicesOf(sc),f=1/spd,ev=[];
+    vs.forEach(v=>{ if(v.id===vid)return; sc.notes.forEach(n=>{ if((n.track||0)!==v.id||n.dup)return;
+        ev.push({t:n.startTime*f,d:Math.max(0.1,n.duration*f),name:toneName(trNote(n,v.name)),vel:Math.min(.7,(n.velocity||.8)*.7)}); }); });
+    ev.sort((a,b)=>a.t-b.t); return ev;
+}
+
+/* ---------- áudio: trompete (amostras) com sintetizador de reserva ---------- */
+const AU={sampler:null,synth:null,ready:false,mode:'loading',out:null,promise:null};
+const SAMPLE_BASES=['samples/violin/','https://nbrosowsky.github.io/tonejs-instruments/samples/violin/','https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/violin/'];
+function rawCtx(){return (window.Tone?Tone.getContext().rawContext:(AU.own||(AU.own=new (window.AudioContext||window.webkitAudioContext)())));}
+function setBadge(){const el=$('rSnd');if(!el)return;
+    el.innerHTML=AU.mode==='trumpet'?'<i class="ok"></i>Som: violino':AU.mode==='synth'?'<i></i>Som: sintetizador (violino carrega em segundo plano)':'<i></i>Carregando som do violino…';}
+async function probe(base){
+    if(!/^https?:/i.test(base)){const r=await fetch(base+'index.json',{cache:'no-cache'});if(!r.ok)throw new Error('sem amostras locais');const j=await r.json();if(!Object.keys(j).length)throw new Error('vazio');return j;}
+    const names=[];for(let o=3;o<=7;o++)['C','Cs','D','Ds','E','F','Fs','G','Gs','A','As','B'].forEach(n=>names.push(n+o));
+    const ok=await Promise.all(names.map(n=>fetch(base+n+'.mp3',{method:'HEAD'}).then(r=>r.ok?n:null).catch(()=>null)));
+    const u={};ok.filter(Boolean).forEach(n=>{u[n.replace('s','#')]=n+'.mp3';});
+    if(!Object.keys(u).length)throw new Error('sem amostras');return u;
+}
+function loadSampler(base,out){
+    return probe(base).then(urls=>new Promise((res,rej)=>{let done=false;const t=setTimeout(()=>{if(!done){done=true;rej(new Error('timeout'));}},45000);let smp;
+        try{smp=new Tone.Sampler({urls,baseUrl:base,release:.5,onload:()=>{if(done){try{smp.dispose();}catch(e){}return;}done=true;clearTimeout(t);res(smp);},onerror:e=>{if(!done){done=true;clearTimeout(t);rej(e||new Error('erro'));}}}).connect(out);}
+        catch(e){if(!done){done=true;clearTimeout(t);rej(e);}}}));
+}
+function useSynth(out){ if(AU.synth||AU.sampler)return;
+    const flt=new Tone.Filter(2600,'lowpass').connect(out);
+    AU.synth=new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sawtooth'},envelope:{attack:.05,decay:.2,sustain:.8,release:.25}}).connect(flt);
+    AU.mode='synth';AU.ready=true;applyVol();setBadge();}
+function applyVol(){ if(!window.Tone)return; const db=Tone.gainToDb(Math.max(.0001,S.vol/100)); [AU.sampler,AU.synth].forEach(n=>{try{if(n)n.volume.value=db;}catch(e){}}); }
+function initAudio(){
+    if(AU.promise)return AU.promise;
+    if(!window.Tone){AU.mode='none';setBadge();AU.promise=Promise.resolve();return AU.promise;}
+    AU.promise=(async()=>{
+        let out=Tone.getDestination();
+        try{const lim=new Tone.Limiter(-1).connect(out);const rev=new Tone.Reverb({decay:2,preDelay:.012,wet:.14}).connect(lim);await rev.generate();out=rev;}catch(e){}
+        AU.out=out;
+        const job=(async()=>{for(const b of SAMPLE_BASES){try{const s=await loadSampler(b,out);AU.sampler=s;AU.mode='trumpet';AU.ready=true;applyVol();
+                if(AU.synth){const o=AU.synth;setTimeout(()=>{try{o.releaseAll();o.dispose();}catch(e){}},2500);AU.synth=null;}setBadge();return true;}catch(e){}}return false;})();
+        const r=await Promise.race([job,new Promise(x=>setTimeout(()=>x(null),7000))]);
+        if(r===null||r===false)useSynth(out);
+        job.then(ok=>{if(!ok&&!AU.sampler){useSynth(out);AU.promise=null;}});
+    })();
+    return AU.promise;
+}
+window.addEventListener('online',()=>{if(!AU.sampler){AU.promise=null;initAudio();}});
+function inst(){return AU.sampler||AU.synth;}
+function playNote(name,dur,when,vel){const i=inst();if(!i)return;try{i.triggerAttackRelease(name,dur,when,vel);}catch(e){}}
+
+/* ---------- estado do jogo ---------- */
+let G={state:'idle'};
+let CUR=null;     // {h, sc, vid, spd, mode}
+const LOOK={lenta:3.4,normal:2.6,rapida:1.9};
+const WIN={estreita:.75,normal:1,larga:1.5};
+const PRE=3;       // segundos de contagem
+function lat(){const c=rawCtx();return (c.outputLatency||c.baseLatency||0)+S.latency/1000;}
+
+/* ---------- tela "pronto" ---------- */
+async function openReady(h){
+    $('load').classList.add('on');
+    try{
+        const sc=await loadScore(h);
+        const vs=voicesOf(sc);
+        CUR={h,sc,vs,vid:null,spd:S.speed/100,mode:S.mode};
+        // voz padrão (se o hino tiver)
+        const pref=['Soprano','Contralto','Tenor','Baixo'][S.voice];
+        const m=vs.find(v=>v.name===pref);CUR.vid=m?m.id:vs[0].id;
+        $('rN').textContent=String(h.n).padStart(3,'0');$('rT').textContent=h.t;
+        drawReady();
+        $('mReady').classList.add('on');
+        if(proLimit()<Infinity)toast('Prévia de '+PRO_CFG.previewSec+' s · hinos 1 a '+proFree()+' são completos · toque em ⭐ Pro');
+        initAudio().then(setBadge);setBadge();
+    }catch(e){toast('Erro: '+e.message);}
+    $('load').classList.remove('on');
+}
+function drawReady(){
+    const box=$('rVoices');box.innerHTML='';
+    CUR.vs.forEach(v=>{const b=document.createElement('button');b.className='chip'+(v.id===CUR.vid?' on':'');
+        const sh=voiceShift(v.name);b.innerHTML=v.name+'<small>'+(sh?'sobe 1 oitava':'como escrito')+'</small>';
+        b.onclick=()=>{CUR.vid=v.id;drawReady();};box.appendChild(b);});
+    $('rSpd').value=Math.round(CUR.spd*100);$('rSpdV').textContent=Math.round(CUR.spd*100)+'%';
+    const m=$('rMode');m.innerHTML='';
+    [['normal','Normal (digitação)'],['facil','Fácil (só o tempo)']].forEach(([k,l])=>{const b=document.createElement('button');b.textContent=l;b.className=CUR.mode===k?'on':'';b.onclick=()=>{CUR.mode=k;drawReady();};m.appendChild(b);});
+}
+$('rSpd').oninput=e=>{CUR.spd=e.target.value/100;$('rSpdV').textContent=e.target.value+'%';};
+$('rCancel').onclick=()=>$('mReady').classList.remove('on');
+$('rGo').onclick=()=>{ $('mReady').classList.remove('on'); startGame(); };
+
+/* ---------- jogo ---------- */
+let cH,xH,cS,xS,dpr=1,rafId=0,pumpId=0,wake=null;
+function sizeCanvases(){dpr=Math.min(window.devicePixelRatio||1,2.5);
+    ['cHw','cStaff','cFb'].forEach(id=>{const c=$(id),r=c.getBoundingClientRect();c.width=Math.max(2,Math.round(r.width*dpr));c.height=Math.max(2,Math.round(r.height*dpr));});
+    cH=$('cHw');xH=cH.getContext('2d');cS=$('cStaff');xS=cS.getContext('2d');}
+window.addEventListener('resize',()=>{if($('sGame').classList.contains('on')&&G.state!=='idle')sizeCanvases();});
+async function unlockAudio(){
+    if(window.Tone){try{await Tone.start();}catch(e){}}else{try{await rawCtx().resume();}catch(e){}}
+    await initAudio();
+}
+async function startGame(){
+    await unlockAudio();
+    go('sGame');
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    launch();
+}
+function launch(){
+    stopGame();closeModals();sizeCanvases();
+    vSetKey(CUR.sc.key||0);const sc=CUR.sc,chart=buildChart(sc,CUR.vid,CUR.spd);
+    if(!chart.length){toast('Esta voz não tem notas neste hino.');G={state:'idle'};back();return;}
+    const vname=(CUR.vs.find(v=>v.id===CUR.vid)||{}).name||'';
+    G={state:'play',chart,back:buildBacking(sc,CUR.vid,CUR.spd),bi:0,a0:0,held:0,
+       score:0,combo:0,maxCombo:0,hits:0,perfect:0,misses:0,total:chart.length,fx:[],pops:[],
+       end:Math.max(...chart.map(n=>n.t+n.d))+.9,vname,bpm:(sc.bpm||100)*CUR.spd,key:sc.key||0,touch:null,ptr:null,cdEnd:0};
+    $('gTitle').textContent=String(CUR.h.n).padStart(3,'0')+' · '+CUR.h.t;
+    $('gSub').textContent=vname+' · '+Math.round(CUR.spd*100)+'%'+(CUR.mode==='facil'?' · fácil':'');
+    updateHud();
+    beginRun(-PRE);
+    try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{wake=w;}).catch(()=>{});}catch(e){}
+}
+// p0 = posição (em s) do início da contagem; o relógio do jogo passa por p0+PRE ao fim dos 3-2-1
+function beginRun(p0){
+    const c=rawCtx();
+    G.state='play';G.a0=c.currentTime-p0;G.cdEnd=p0+PRE;
+    G.bi=G.back.findIndex(e=>e.t>=p0);if(G.bi<0)G.bi=G.back.length;
+    clearInterval(pumpId);pumpId=setInterval(pump,35);
+    cancelAnimationFrame(rafId);rafId=requestAnimationFrame(frame);
+}
+function tNow(){return rawCtx().currentTime-G.a0-lat();}
+function pump(){
+    if(!G||G.state!=='play')return;
+    const c=rawCtx(),ahead=c.currentTime+.3;
+    while(G.bi<G.back.length){const e=G.back[G.bi],when=G.a0+e.t;
+        if(when>ahead)break;
+        G.bi++;
+        if(when<c.currentTime-.05||!S.backing)continue;
+        playNote(e.name,e.d,Math.max(when,c.currentTime),e.vel*(S.backVol/100));}
+}
+function releaseAudio(){try{const i=inst();i&&i.releaseAll&&i.releaseAll();}catch(e){}}
+function pauseGame(){
+    if(!G||G.state!=='play')return;
+    G.state='pause';G.pausedAt=tNow();
+    clearInterval(pumpId);cancelAnimationFrame(rafId);releaseAudio();
+    G.touch=null;G.ptr=null;
+    $('mPause').classList.add('on');
+}
+function resumeGame(){
+    $('mPause').classList.remove('on');
+    beginRun(Math.max(-PRE,G.pausedAt-PRE));   // recua 3 s e faz a contagem
+}
+function stopGame(){
+    clearInterval(pumpId);cancelAnimationFrame(rafId);
+    if(G){G.held=0;}
+    releaseAudio();
+    if(G&&G.state!=='idle')G.state='idle';
+    try{wake&&wake.release();}catch(e){} wake=null;
+}
+$('gPause').onclick=pauseGame;
+$('gExit').onclick=pauseGame;
+$('pResume').onclick=resumeGame;
+$('pRestart').onclick=()=>launch();
+$('pQuit').onclick=()=>{stopGame();closeModals();go('sHinos');};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&G.state==='play')pauseGame();});
+
+/* ---------- entrada: dedo no braço do violino ---------- */
+// O que vale é a POSIÇÃO do dedo (corda + altura) na hora da nota. Corda solta = tocar o círculo acima da pestana.
+const HW=()=>WIN[S.win]||1, PTOL={estreita:.5,normal:.7,larga:1};
+function haptic(ms){if(S.vibrate&&navigator.vibrate){try{navigator.vibrate(ms);}catch(e){}}}
+function FBG(){const e=$('cFb'),W=e.clientWidth,H=e.clientHeight,bw=W*.94/4,yN=H*.2,yE=H*.95;
+    return{W,H,bw,yN,yE,xs:i=>W/2+(i-1.5)*bw,yo:o=>yN+(yE-yN)*Math.min(o,OFFMAX)/OFFMAX};}
+function fbTouch(e){const r=$('cFb').getBoundingClientRect(),g=FBG(),x=e.clientX-r.left,y=e.clientY-r.top;
+    let s=0,b=1e9;for(let i=0;i<4;i++){const d=Math.abs(x-g.xs(i));if(d<b){b=d;s=i;}}
+    return{s,x,y,off:y<g.yN-2?-1:Math.max(0,(y-g.yN)/(g.yE-g.yN)*OFFMAX)};}
+function onPos(n){const q=G.touch;if(!q||q.s!==n.s)return false;return n.off===0?q.off<=.4:Math.abs(q.off-n.off)<=(PTOL[S.ptol]||.7);}
+// modo fácil: qualquer toque perto da hora acerta a nota mais próxima
+function easyTap(){
+    const t=tNow(),maxW=.22*HW(),pw=.075*HW();
+    const cand=G.chart.filter(n=>n.st===0&&Math.abs(n.t-t)<=maxW);
+    if(!cand.length)return;
+    const p=cand.reduce((a,b)=>Math.abs(a.t-t)<=Math.abs(b.t-t)?a:b);
+    hitNote(p,Math.abs(p.t-t)<=pw);
+}
+// chamado a cada quadro: acerta a nota quando o dedo está na posição dela
+function checkPosition(t){
+    const maxW=.22*HW(),pw=.075*HW();
+    for(const n of G.chart){
+        if(n.t>t)break;
+        if(n.st!==0||t>n.t+maxW)continue;
+        if(onPos(n)){hitNote(n,t-n.t<=pw);return;}
+    }
+}
+function hitNote(n,perfect){
+    n.st=1;n.perfect=perfect;G.hits++;if(perfect)G.perfect++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);
+    const mult=Math.min(4,1+Math.floor(G.combo/10));
+    G.score+=(perfect?300:150)*mult;
+    playNote(toneName(n.m),Math.max(.15,n.d),undefined,Math.min(1,.95*(n.vel+.2)));
+    G.pops.push({txt:perfect?'Perfeito!':'Bom',c:perfect?'#ffe2b8':'#4be3b5',t:tNow()});
+    G.fx.push({s:n.s,t:tNow()});
+    haptic(12);updateHud();
+}
+function updateHud(){
+    $('gScore').textContent=G.score.toLocaleString('pt-BR');
+    const done=G.hits+G.misses;$('gAcc').textContent=(done?Math.round(100*G.hits/done):100)+'%'+(G.combo>=5?' · x'+G.combo:'');
+}
+const fbEl=$('cFb');
+fbEl.addEventListener('pointerdown',e=>{e.preventDefault();try{fbEl.setPointerCapture(e.pointerId);}catch(_){}
+    if(!G||G.state!=='play')return;G.ptr=e.pointerId;G.touch=fbTouch(e);if(CUR.mode==='facil')easyTap();});
+fbEl.addEventListener('pointermove',e=>{if(G&&G.state==='play'&&G.ptr===e.pointerId)G.touch=fbTouch(e);});
+['pointerup','pointercancel','lostpointercapture'].forEach(t=>fbEl.addEventListener(t,e=>{if(G&&G.ptr===e.pointerId){G.touch=null;G.ptr=null;}}));
+fbEl.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sGame').classList.contains('on'))pauseGame();});
+
+/* ---------- desenho ---------- */
+function frame(){
+    if(!G||G.state!=='play')return;
+    const t=tNow();
+    // erros por nota que passou
+    checkPosition(t);
+    const maxW=.22*HW();
+    G.chart.forEach(n=>{ if(n.st===0&&t>n.t+maxW){n.st=2;G.misses++;G.combo=0;G.pops.push({txt:'Errou',c:'#ff6b6b',t});updateHud();} });
+    drawHighway(t);drawFb(t);drawStaff(t);
+    $('gProg').style.width=Math.max(0,Math.min(100,t/G.end*100))+'%';
+    const rest=G.cdEnd-t;$('cdn').textContent=rest>0?Math.ceil(rest):'';
+    if(t>G.end){finishGame();return;}
+    if(t>=proLimit()){proLimitHit();return;}
+    rafId=requestAnimationFrame(frame);
+}
+const FCOL=['#8fd3ff','#ff7a6b','#ffb04a','#7be39a','#c79bff'];   // cor por dedo: 0 solta, 1..4
+function drawHighway(t){
+    const c=xH,W=cH.width/dpr,H=cH.height/dpr,LA=LOOK[S.fall]||2.6;
+    c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
+    const yTop=H*.03,yHit=H-8,bw=W*.94/4,cx=W/2,sc=d=>.5+.5*d,yy=d=>yTop+(yHit-yTop)*Math.pow(Math.max(0,d),1.45),xl=(i,d)=>cx+(i-1.5)*bw*sc(d);
+    const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#050403');g.addColorStop(1,'#20120a');c.fillStyle=g;
+    c.beginPath();c.moveTo(cx-2*bw*sc(0),yy(0));c.lineTo(cx+2*bw*sc(0),yy(0));c.lineTo(cx+2*bw,yy(1));c.lineTo(cx-2*bw,yy(1));c.closePath();c.fill();
+    for(let i=0;i<4;i++){const on=G.touch&&G.touch.s===i;c.strokeStyle=on?'#ffe2b8cc':'#f2a03d55';c.lineWidth=(on?3:1.6)*(1.5-i*.15);c.beginPath();c.moveTo(xl(i,0),yy(0));c.lineTo(xl(i,1),yy(1));c.stroke();}
+    const beat=60/G.bpm;c.strokeStyle='#f2a03d22';c.lineWidth=1;
+    for(let b=Math.ceil(t/beat);b*beat<=t+LA;b++){const d=1-(b*beat-t)/LA;if(d<0||d>1.05)continue;const y=yy(d);c.beginPath();c.moveTo(cx-2*bw*sc(d),y);c.lineTo(cx+2*bw*sc(d),y);c.stroke();}
+    c.save();c.beginPath();c.rect(0,0,W,yHit+10);c.clip();
+    for(const n of G.chart){
+        const te=n.t+n.d;if(te<t-.5||n.t>t+LA)continue;
+        const dB=Math.min(1-(n.t-t)/LA,1.1),dT=Math.min(1-(Math.min(te,n.t+.9)-t)/LA,dB-.05),yB=yy(dB),s=sc(dB),x=xl(n.s,dB),w=bw*.4*s,hh=Math.max(16,34*s);
+        c.globalAlpha=n.st===1?Math.max(.12,1-(t-n.t)/.3):n.st===2?.4:1;
+        const col=n.st===1?'#7df0d0':n.st===2?'#6b5a52':FCOL[n.f];
+        c.fillStyle=col+'88';c.fillRect(x-w*.16,yy(dT),w*.32,Math.max(0,yB-hh-yy(dT)));
+        c.fillStyle=col;c.strokeStyle='#fff8';c.lineWidth=1.5;c.beginPath();c.roundRect?c.roundRect(x-w,yB-hh,w*2,hh,hh*.3):c.rect(x-w,yB-hh,w*2,hh);c.fill();c.stroke();
+        c.fillStyle='#1b0f06';c.font='800 '+Math.max(10,hh*.5)+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n.f+' · '+noteName(n.m),x,yB-hh/2+1);c.textBaseline='alphabetic';
+    }
+    c.restore();c.globalAlpha=1;
+    const hg=c.createLinearGradient(0,0,W,0);hg.addColorStop(0,'#f2a03d00');hg.addColorStop(.15,'#ffe2b8');hg.addColorStop(.85,'#ffe2b8');hg.addColorStop(1,'#f2a03d00');
+    c.fillStyle=hg;c.shadowColor='#ffb84a';c.shadowBlur=14;c.fillRect(0,yHit-2,W,4);c.shadowBlur=0;
+    G.fx=G.fx.filter(f=>t-f.t<.45);
+    G.fx.forEach(f=>{const p=(t-f.t)/.45;c.strokeStyle='rgba(255,226,184,'+(1-p)+')';c.lineWidth=4*(1-p);c.beginPath();c.ellipse(xl(f.s,1),yHit-4,bw*.25+bw*.5*p,bw*.1+bw*.2*p,0,0,6.3);c.stroke();});
+    G.pops=G.pops.filter(p=>t-p.t<.7);const lp=G.pops[G.pops.length-1];
+    if(lp){const p=(t-lp.t)/.7;c.globalAlpha=1-p;c.fillStyle=lp.c;c.font='800 22px system-ui';c.textAlign='center';c.fillText(lp.txt,W/2,yHit-bw*.7-p*24);c.globalAlpha=1;}
+    if(G.combo>=5){c.fillStyle='#ffe2b8';c.font='800 15px system-ui';c.textAlign='left';c.fillText('COMBO '+G.combo,10,22);}
+}
+// braço do violino: mostra ONDE pôr o dedo (próxima nota em destaque, a seguinte mais fraca)
+function drawFb(t){
+    const c=$('cFb').getContext('2d'),g=FBG(),{W,H,bw,yN,yE}=g;
+    c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
+    c.fillStyle='#120a06';c.fillRect(0,0,W,H);
+    c.fillStyle='#2b1a10';c.fillRect(W*.03,yN,W*.94,yE-yN+10);
+    c.fillStyle='#ead9bd';c.fillRect(W*.03,yN-4,W*.94,5);
+    c.strokeStyle='#ffffff12';c.lineWidth=1;
+    for(let o=1;o<=9;o++){const y=g.yo(o);c.beginPath();c.moveTo(W*.03,y);c.lineTo(W*.97,y);c.stroke();}
+    const CS=['#c58a3d','#cfd3d6','#d9dde0','#eef1f3'],NM=['Sol','Ré','Lá','Mi'];
+    for(let i=0;i<4;i++){const x=g.xs(i),on=G.touch&&G.touch.s===i;c.strokeStyle=on?'#fff':CS[i];c.lineWidth=[3.4,2.8,2.2,1.7][i]+(on?1:0);c.beginPath();c.moveTo(x,yN-4);c.lineTo(x,yE+10);c.stroke();
+        c.fillStyle='#a89d83';c.font='700 11px system-ui';c.textAlign='center';c.fillText(NM[i],x,11);}
+    const maxW=.22*HW(),list=[];
+    for(const n of G.chart){if(n.st!==0||n.t+maxW<t)continue;list.push(n);if(list.length===2)break;}
+    list.forEach((n,k)=>{const x=g.xs(n.s),y=n.off?g.yo(n.off):yN-15,dt=Math.max(0,n.t-t),R=Math.min(bw*.34,22)*(k?.8:1),col=FCOL[n.f];
+        c.globalAlpha=k?.4:1;
+        if(!k){c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.arc(x,y,R+3+Math.min(dt,1.2)*14,0,6.3);c.stroke();}
+        c.fillStyle=n.off?col:'#00000000';c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.arc(x,y,R,0,6.3);if(n.off)c.fill();else c.stroke();
+        c.fillStyle=n.off?'#1b0f06':col;c.font='800 '+R*1.05+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n.f,x,y+1);c.textBaseline='alphabetic';c.globalAlpha=1;});
+    if(G.touch){const q=G.touch,ok=list[0]&&onPos(list[0]);c.fillStyle=ok?'#7df0d055':'#ffffff22';c.strokeStyle=ok?'#7df0d0':'#fff';c.lineWidth=3;c.beginPath();c.arc(q.x,q.y,17,0,6.3);c.fill();c.stroke();}
+}
+/* partitura em clave de Sol (violino: escrita = som) */
+const LETT=[0,0,1,2,2,3,3,4,4,5,6,6];
+function stepOf(w,flat){ // w: MIDI escrito → {step,acc}
+    const pc=((w%12)+12)%12,oct=Math.floor(w/12)-1;
+    const sharpL=[0,0,1,1,2,3,3,4,4,5,5,6],sharpA=[0,1,0,1,0,0,1,0,1,0,1,0];
+    const flatL=[0,1,1,2,2,3,4,4,5,5,6,6],flatA=[0,-1,0,-1,0,0,-1,0,-1,0,-1,0];
+    return flat?{step:oct*7+flatL[pc],acc:flatA[pc]}:{step:oct*7+sharpL[pc],acc:sharpA[pc]};
+}
+function drawStaff(t){
+    const c=xS;c.clearRect(0,0,cS.width,cS.height);
+    if(!S.staff){return;}
+    const W=cS.width,H=cS.height,sp=H*.1,yb=H*.64;   // yb = linha de baixo (Mi4)
+    const flat=((G.key||0)+(TR_TRANS?2:0))<0||((G.key||0)+(TR_TRANS?2:0))>6;
+    c.strokeStyle='#8a7a52';c.lineWidth=1*dpr;
+    for(let i=0;i<5;i++){const y=yb-i*sp;c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+    c.fillStyle='#f2a03d';c.font=(sp*5.2)+'px serif';c.textAlign='left';c.textBaseline='alphabetic';c.fillText('𝄞',4*dpr,yb+sp*.6);
+    const xPh=W*.2,span=W*.76,TS=4.2;
+    c.strokeStyle='#ffe9a0';c.lineWidth=2*dpr;c.beginPath();c.moveTo(xPh,yb-sp*5.5);c.lineTo(xPh,yb+sp*1.6);c.stroke();
+    for(const n of G.chart){
+        if(n.t+n.d<t-.3||n.t>t+TS)continue;
+        const x=xPh+(n.t-t)/TS*span; if(x<W*.12)continue;
+        const w=n.m+TR_TRANS,{step,acc}=stepOf(w,flat),yN=yb-(step-30)*sp/2;
+        c.strokeStyle='#8a7a52';c.lineWidth=1*dpr;
+        if(step<=28){for(let s=28;s>=step;s-=2){const y=yb-(s-30)*sp/2;c.beginPath();c.moveTo(x-sp*.9,y);c.lineTo(x+sp*.9,y);c.stroke();}}
+        if(step>=40){for(let s=40;s<=step;s+=2){const y=yb-(s-30)*sp/2;c.beginPath();c.moveTo(x-sp*.9,y);c.lineTo(x+sp*.9,y);c.stroke();}}
+        const col=n.st===1?'#7df0d0':n.st===2?'#7a6a62':'#ffe2b8';
+        c.fillStyle=col;c.strokeStyle=col;c.beginPath();c.ellipse(x,yN,sp*.62,sp*.44,-.35,0,6.3);c.fill();
+        c.lineWidth=1.4*dpr;c.beginPath();if(step<34){c.moveTo(x+sp*.58,yN);c.lineTo(x+sp*.58,yN-sp*3);}else{c.moveTo(x-sp*.58,yN);c.lineTo(x-sp*.58,yN+sp*3);}c.stroke();
+        if(acc){c.font=(sp*2)+'px serif';c.textAlign='right';c.fillText(acc>0?'♯':'♭',x-sp*.8,yN+sp*.5);}
+        c.font='700 '+(sp*1.35)+'px system-ui';c.textAlign='center';c.fillStyle='#a89d83';c.fillText(noteName(n.m),x,H-3*dpr);
+    }
+}
+
+/* ---------- fim do jogo ---------- */
+function finishGame(){
+    stopGame();
+    const acc=Math.round(100*G.hits/G.total),stars=acc>=95?3:acc>=80?2:acc>=50?1:0;
+    const key=CUR.h.n+':'+CUR.vid,rec=REC(),old=rec[key]||{score:0,stars:0};
+    const rec2=G.score>old.score;
+    rec[key]={score:Math.max(old.score,G.score),stars:Math.max(old.stars,stars),acc:rec2?acc:old.acc};store.set('dhg_rec',rec);
+    store.set('dhg_last',{n:CUR.h.n,t:CUR.h.t,f:CUR.h.f});
+    $('eT').textContent=acc>=80?'Muito bem!':acc>=50?'Boa tentativa!':'Vamos treinar mais?';
+    $('eStars').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+    $('eScore').textContent=G.score.toLocaleString('pt-BR');$('eAcc').textContent=acc+'%';$('eCombo').textContent=G.maxCombo;
+    $('eBest').textContent=rec2&&old.score?'🏆 Novo recorde!':(old.score?'Seu recorde: '+old.score.toLocaleString('pt-BR'):'Primeiro resultado salvo');
+    $('mEnd').classList.add('on');
+}
+$('eAgain').onclick=()=>{$('mEnd').classList.remove('on');launch();};
+$('eVoice').onclick=()=>{$('mEnd').classList.remove('on');go('sHinos');$('mReady').classList.add('on');drawReady();setBadge();};
+$('eList').onclick=()=>{$('mEnd').classList.remove('on');go('sHinos');};
+
+/* ---------- configurações ---------- */
+function renderSettings(){
+    const box=$('setBox');box.innerHTML='';
+    const card=(t,p)=>{const d=document.createElement('div');d.className='set';d.innerHTML='<h3>'+t+'</h3>'+(p?'<p>'+p+'</p>':'');box.appendChild(d);return d;};
+    const seg=(t,p,key,opts,after)=>{const d=card(t,p),s=document.createElement('div');s.className='seg';d.appendChild(s);
+        const draw=()=>{s.innerHTML='';opts.forEach(([v,l])=>{const b=document.createElement('button');b.textContent=l;b.className=S[key]===v?'on':'';b.onclick=()=>{S[key]=v;saveS();after&&after(v);draw();};s.appendChild(b);});};draw();};
+    const rng=(t,p,key,min,max,step,fmt,after)=>{const d=card(t,p),r=document.createElement('div');r.className='rng';
+        r.innerHTML='<input type="range" min="'+min+'" max="'+max+'" step="'+step+'"><output></output>';d.appendChild(r);
+        const i=r.children[0],o=r.children[1];i.value=S[key];o.textContent=fmt(S[key]);
+        i.oninput=()=>{S[key]=+i.value;o.textContent=fmt(S[key]);saveS();after&&after();};};
+    seg('Voz padrão','Tenor e baixo são tocados uma oitava acima e encaixados no alcance do violino.','voice',[[0,'Soprano'],[1,'Contralto'],[2,'Tenor'],[3,'Baixo']]);
+    rng('Velocidade do hino','Mais lento ajuda a aprender.','speed',40,120,5,v=>v+'%');
+    seg('Modo de jogo','Normal: mantenha o dedo no lugar certo na hora da nota. Fácil: basta tocar no tempo.','mode',[['normal','Normal'],['facil','Fácil']]);
+    seg('Velocidade da queda das notas',null,'fall',[['lenta','Lenta'],['normal','Normal'],['rapida','Rápida']]);
+    seg('Tolerância de tempo',null,'win',[['estreita','Estreita'],['normal','Normal'],['larga','Larga']]);
+    seg('Tolerância de posição','Quanto o dedo pode errar o lugar da nota no braço.','ptol',[['estreita','Estreita'],['normal','Normal'],['larga','Larga']]);
+    seg('Nome das notas',null,'names',[['solfa','Dó Ré Mi'],['cifra','C D E']]);
+    seg('Acompanhamento','As outras vozes tocam sozinhas enquanto você toca a sua.','backing',[[true,'Ligado'],[false,'Desligado']]);
+    rng('Volume do acompanhamento',null,'backVol',0,100,5,v=>v+'%');
+    rng('Volume geral',null,'vol',10,100,5,v=>v+'%',applyVol);
+    seg('Partitura no topo',null,'staff',[[true,'Mostrar'],[false,'Ocultar']]);
+    seg('Vibração ao acertar',null,'vibrate',[[true,'Ligada'],[false,'Desligada']]);
+    rng('Ajuste de atraso do som','Se as notas parecem chegar cedo ou tarde demais (fone Bluetooth, por exemplo), ajuste aqui.','latency',-200,400,10,v=>(v>0?'+':'')+v+' ms');
+    const d=card('Recordes');const b=document.createElement('button');b.className='danger';b.textContent='Apagar todos os recordes';b.onclick=()=>{if(confirm('Apagar todos os recordes e estrelas?')){store.set('dhg_rec',{});toast('Recordes apagados');}};d.appendChild(b);
+}
+
+/* ======================== MODO PRO (grátis x pro) ========================
+   Grátis: hinos 1..freeHinos completos; nos demais o jogo para após PRO_CFG.previewSec s e abre a tela Pro.
+   Site/PWA e APK (modo 'pix'): Pro com código de uso único (1 código = 1 aparelho) validado na planilha Google (Apps Script).
+   Google Play (modo 'play'): anúncio premiado libera 1 hino por PRO_CFG.adHoras h; Pro opcional pelo Google Play Billing. */
+const PRO_CFG=window.PRO_CFG||{app:'violin-game',modo:'pix',produtoId:'pro_desbloqueio',scriptUrl:'',pixKey:'',pixName:'',pixCity:'',price:0,whatsapp:'',freeHinos:50,previewSec:15};
+const PRO={ok:false,code:'',dev:'',last:0,native:false,devId:''};
+function proSave(){ try{ if(PRO.ok) localStorage.setItem('proState',JSON.stringify({code:PRO.code,dev:PRO.dev,last:PRO.last})); else localStorage.removeItem('proState'); }catch(e){} }
+function proLoad(){ try{ const s=JSON.parse(localStorage.getItem('proState')||'null'); if(s&&s.code){ PRO.ok=true; PRO.code=s.code; PRO.dev=s.dev||''; PRO.last=s.last||0; } }catch(e){} }
+const proTxt=s=>{ const d=document.createElement('div'); d.textContent=String(s); return d.innerHTML; };
+const proFree=()=>PRO_CFG.freeHinos;
+// ---- Anúncio premiado (AdMob, só no modo 'play'): libera UM hino por PRO_CFG.adHoras hora(s) ----
+function proAdMap(){ if(!PRO.ad){ try{ PRO.ad=JSON.parse(localStorage.getItem('proAd')||'{}')||{}; }catch(e){ PRO.ad={}; } } return PRO.ad; }
+function proAdActive(n){ const t=proAdMap()[n]; return !!t&&Date.now()<t; }
+function proAdSave(){ try{ const m=proAdMap(), now=Date.now(); Object.keys(m).forEach(k=>{ if(m[k]<now) delete m[k]; }); localStorage.setItem('proAd',JSON.stringify(m)); }catch(e){} }
+function proAds(){ try{ const C=window.Capacitor; return (PRO_CFG.modo==='play'&&PRO_CFG.adRewardedId&&C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.AdMob)||null; }catch(e){ return null; } }
+let proAdInit=null;
+function proAdStart(){
+    if(proAdInit) return proAdInit;
+    const A=proAds();
+    proAdInit=(async()=>{
+        await A.initialize({initializeForTesting:!!PRO_CFG.adsTeste});
+        try{ const ci=await A.requestConsentInfo(); if(ci&&ci.isConsentFormAvailable&&String(ci.status).toUpperCase()==='REQUIRED') await A.showConsentForm(); }catch(e){}   // consentimento (UE/Reino Unido), se configurado no AdMob
+    })().catch(e=>{ proAdInit=null; throw e; });
+    return proAdInit;
+}
+// resolve se o usuário assistiu até o fim (hino liberado); lança erro caso contrário
+async function proAdWatch(n){
+    const A=proAds(); if(!A) throw new Error('indisponivel');
+    await proAdStart();
+    let rewarded=false; const subs=[];
+    try{
+        try{ subs.push(await A.addListener('onRewardedVideoAdReward',()=>{ rewarded=true; })); }catch(e){}
+        await A.prepareRewardVideoAd({adId:PRO_CFG.adRewardedId,isTesting:!!PRO_CFG.adsTeste});
+        const r=await A.showRewardVideoAd();
+        if(r&&(r.amount!==undefined||r.type!==undefined)) rewarded=true;
+    } finally { subs.forEach(sb=>{ try{ sb.remove(); }catch(e){} }); }
+    if(!rewarded) throw new Error('nao_assistiu');
+    proAdMap()[n]=Date.now()+(PRO_CFG.adHoras||1)*3600e3; proAdSave();
+}
+// ---- Google Play Billing (modo 'play': app instalado pela Play Store) ----
+// A Play guarda quem comprou: o Pro volta sozinho ao reinstalar ou trocar de aparelho com a mesma conta Google.
+function proBilling(){ try{ const C=window.Capacitor; return (C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.NativePurchases)||null; }catch(e){ return null; } }
+function proPlay(){ return PRO_CFG.modo==='play'; }
+// true/false se conseguiu consultar a Play; lança erro se não conseguiu (sem conexão etc.)
+async function proPlayHas(){
+    const B=proBilling(); if(!B) throw new Error('sem_billing');
+    const r=await B.getPurchases({productType:'inapp'});
+    const list=Array.isArray(r)?r:(r&&r.purchases)||[];
+    return list.some(p=>{ if(!p||p.productIdentifier!==PRO_CFG.produtoId) return false; const st=String(p.purchaseState==null?'':p.purchaseState).toUpperCase(); return st!=='2'&&st!=='PENDING'; });
+}
+function proPlayOn(){ PRO.ok=true; PRO.code='GOOGLE PLAY'; PRO.dev=''; PRO.last=Date.now(); proSave(); proRefresh(); }
+async function proInitPlay(){
+    proLoad(); proRefresh();
+    if(!proBilling()) return;
+    try{
+        const has=await proPlayHas();
+        if(has&&!PRO.ok) proPlayOn();
+        else if(!has&&PRO.ok){ PRO.ok=false; proSave(); proRefresh(); }   // reembolso/estorno
+    }catch(e){}                                                              // sem conexão com a Play: mantém o que está salvo
+}
+function proMsgTop(){ return proReason==='fim'?'Fim da prévia de '+PRO_CFG.previewSec+' segundos deste hino.':proReason==='hino'?'Este hino tem só '+PRO_CFG.previewSec+' segundos de prévia grátis.':''; }
+function proHeadTxt(){ return '<b>Grátis:</b> hinos 1 a '+proFree()+' completos e '+PRO_CFG.previewSec+' s de prévia nos demais.<br>'; }
+async function proRenderPlay(){
+    const box=$('proBody'); if(!box) return;
+    if(PRO.ok){
+        box.innerHTML='<div class="pro-ok">✓ Pro ativo</div><p class="pro-p">Todos os hinos estão liberados e completos.</p><p class="pro-p pro-small">A compra fica ligada à sua conta Google. Se reinstalar o app ou trocar de aparelho, use “Restaurar compra”.</p><div class="pro-row"><button class="pro-btn sec" id="proRestore">Restaurar compra</button></div><div class="pro-msg" id="proMsg"></div>';
+    } else {
+        const n=CUR&&CUR.h?CUR.h.n:null;
+        const canAd=!!proAds()&&n!=null&&n>proFree()&&!proAdActive(n);
+        const canBuy=PRO_CFG.playCompra!==false&&!!proBilling();
+        let price=''; if(canBuy){ try{ const r=await proBilling().getProduct({productIdentifier:PRO_CFG.produtoId,productType:'inapp'}); price=(r&&r.product&&r.product.priceString)||''; }catch(e){} }
+        const mt=proMsgTop();
+        box.innerHTML=(mt?'<div class="pro-top">'+mt+'</div>':'')+
+          '<p class="pro-p">'+proHeadTxt()+'<b>Liberar um hino:</b> assista a um anúncio em vídeo e jogue o hino completo por '+(PRO_CFG.adHoras||1)+' h.'+(canBuy?'<br><b>Pro:</b> todos os hinos completos, sem anúncios. Pagamento único pela Google Play'+(price?' · <b class="pro-price"></b>':'')+'.':'')+'</p>'+
+          (canAd?'<div class="pro-row"><button class="pro-btn" id="proAdBtn">▶ Ver anúncio e liberar o hino '+n+' por '+(PRO_CFG.adHoras||1)+' h</button></div>':(n!=null&&n>proFree()&&!proAds()?'<p class="pro-p pro-small">Anúncio indisponível neste aparelho agora.</p>':''))+
+          (canBuy?'<div class="pro-row"><button class="pro-btn sec" id="proBuy">Comprar Pro</button><button class="pro-btn sec" id="proRestore">Restaurar compra</button></div>':'')+
+          '<div class="pro-msg" id="proMsg"></div>';
+        const pe=box.querySelector('.pro-price'); if(pe) pe.textContent=price;
+        const adb=$('proAdBtn');
+        if(adb) adb.onclick=async()=>{
+            const m=$('proMsg'); m.textContent='Carregando o anúncio…'; m.className='pro-msg'; adb.disabled=true;
+            try{
+                await proAdWatch(n);
+                toast('Hino '+n+' liberado por '+(PRO_CFG.adHoras||1)+' h ✓'); proRefresh(); proClose();
+            }catch(e){
+                adb.disabled=false;
+                m.textContent=(e&&e.message==='nao_assistiu')?'Assista ao anúncio até o fim para liberar o hino.':'Anúncio indisponível agora. Verifique a internet e tente de novo mais tarde.'; m.className='pro-msg err';
+            }
+        };
+        const buy=$('proBuy');
+        if(buy) buy.onclick=async()=>{
+            const m=$('proMsg'); m.textContent='Abrindo a Google Play…'; m.className='pro-msg'; buy.disabled=true;
+            try{
+                await proBilling().purchaseProduct({productIdentifier:PRO_CFG.produtoId,productType:'inapp',quantity:1});
+                proPlayOn(); toast('Pro ativado! Obrigado pelo apoio ✓'); proRender();
+            }catch(e){
+                buy.disabled=false; const t=String((e&&e.message)||e);
+                m.textContent=/cancel/i.test(t)?'Compra cancelada.':'Não foi possível concluir a compra. Tente de novo.'; m.className='pro-msg err';
+            }
+        };
+    }
+    const rb=$('proRestore');
+    if(rb) rb.onclick=async()=>{
+        const m=$('proMsg'); m.textContent='Consultando a Google Play…'; m.className='pro-msg';
+        try{
+            if(await proPlayHas()){ proPlayOn(); toast('Compra restaurada ✓'); proRender(); }
+            else { m.textContent='Nenhuma compra do Pro encontrada nesta conta Google.'; m.className='pro-msg err'; }
+        }catch(e){ m.textContent='Sem conexão com a Google Play. Tente de novo.'; m.className='pro-msg err'; }
+    };
+}
+/*PIX-JS-START*/
+// ---- Site/PWA e APK (modo 'pix'): código de uso único, 1 código = 1 aparelho, validado na planilha Google ----
+async function proSha(txt){
+    try{ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt)); return [...new Uint8Array(b)].slice(0,12).map(x=>x.toString(16).padStart(2,'0')).join(''); }
+    catch(e){ let h=0; for(const ch of txt) h=(h*31+ch.charCodeAt(0))|0; return 'x'+(h>>>0).toString(16); }
+}
+// identificador do aparelho: Android ID (app instalado; sobrevive a desinstalar/limpar dados) ou impressão digital do navegador
+async function proDevice(){
+    if(PRO.devId) return PRO.devId;
+    const C=window.Capacitor;
+    if(C&&C.isNativePlatform&&C.isNativePlatform()){
+        try{ const D=C.Plugins&&C.Plugins.Device; if(D&&D.getId){ const r=await D.getId(); const id=r&&(r.identifier||r.uuid); if(id){ PRO.native=true; return PRO.devId='n-'+id; } } }catch(e){}
+    }
+    let st=''; try{ st=localStorage.getItem('proDev')||''; }catch(e){}
+    if(!st){
+        let gl=''; try{ const c=document.createElement('canvas').getContext('webgl'), x=c&&c.getExtension('WEBGL_debug_renderer_info'); if(x) gl=c.getParameter(x.UNMASKED_RENDERER_WEBGL)+'|'+c.getParameter(x.UNMASKED_VENDOR_WEBGL); }catch(e){}
+        const fp=[navigator.platform,screen.width+'x'+screen.height,window.devicePixelRatio,Intl.DateTimeFormat().resolvedOptions().timeZone,navigator.language,navigator.hardwareConcurrency,navigator.deviceMemory,gl].join('|');
+        st='w-'+await proSha(fp); try{ localStorage.setItem('proDev',st); }catch(e){}
+    }
+    return PRO.devId=st;
+}
+async function proCall(body){
+    if(!/^https?:/.test(PRO_CFG.scriptUrl)) throw new Error('config');
+    const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),20000);
+    try{
+        const r=await fetch(PRO_CFG.scriptUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({app:PRO_CFG.app},body)),signal:ctl.signal,redirect:'follow'});
+        return await r.json();
+    } finally { clearTimeout(to); }
+}
+const PRO_MSG={invalido:'Código não encontrado. Confira se digitou certo.',bloqueado:'Este código foi bloqueado. Fale com o suporte.',outro_dispositivo:'Este código já foi usado em outro aparelho. Cada código vale para um único aparelho.',dispositivo_invalido:'Não foi possível identificar este aparelho.',servidor:'Erro no servidor de ativação. Tente de novo em instantes.'};
+async function proActivate(raw){
+    const code=String(raw||'').trim(); if(!code) return {ok:false,msg:'Digite o código.'};
+    let dev; try{ dev=await proDevice(); }catch(e){ return {ok:false,msg:PRO_MSG.dispositivo_invalido}; }
+    let r; try{ r=await proCall({acao:'ativar',codigo:code,dispositivo:dev}); }
+    catch(e){ return {ok:false,msg:e.message==='config'?'O servidor de ativação ainda não foi configurado neste app.':'Sem conexão com o servidor. Conecte-se à internet e tente de novo.'}; }
+    if(r&&r.ok){ PRO.ok=true; PRO.code=code.toUpperCase(); PRO.dev=dev; PRO.last=Date.now(); proSave(); proRefresh(); return {ok:true,status:r.status}; }
+    return {ok:false,msg:PRO_MSG[r&&r.erro]||'Não foi possível ativar.'};
+}
+async function proInitPix(){
+    proLoad(); proRefresh();
+    try{
+        const dev=await proDevice();
+        if(PRO.ok){
+            if(Date.now()-PRO.last>24*3600e3){          // revalida 1x por dia; sem internet, continua liberado
+                try{
+                    const r=await proCall({acao:'verificar',codigo:PRO.code,dispositivo:PRO.dev||dev});
+                    if(r&&r.ok){ PRO.last=Date.now(); proSave(); }
+                    else if(r&&['bloqueado','outro_dispositivo','invalido'].includes(r.erro)){ PRO.ok=false; proSave(); proRefresh(); toast('O acesso Pro deste aparelho foi encerrado.'); }
+                }catch(e){}
+            }
+        } else if(PRO.native){                           // reinstalou ou limpou os dados: o Android ID é o mesmo → recupera sozinho
+            try{
+                const r=await proCall({acao:'restaurar',dispositivo:dev});
+                if(r&&r.ok&&r.codigo){ PRO.ok=true; PRO.code=r.codigo; PRO.dev=dev; PRO.last=Date.now(); proSave(); proRefresh(); toast('Acesso Pro restaurado neste aparelho ✓'); }
+            }catch(e){}
+        }
+    }catch(e){}
+}
+// ---- Pix "copia e cola" (BR Code estático, com valor) ----
+function proCrc16(s){ let c=0xFFFF; for(let i=0;i<s.length;i++){ c^=s.charCodeAt(i)<<8; for(let j=0;j<8;j++) c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF; } return c.toString(16).toUpperCase().padStart(4,'0'); }
+function proPixPayload(){
+    const clean=(t,n)=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9 ]/g,'').toUpperCase().slice(0,n);
+    const f=(id,v)=>id+String(v.length).padStart(2,'0')+v;
+    const mai=f('00','br.gov.bcb.pix')+f('01',String(PRO_CFG.pixKey).trim());
+    const amt=PRO_CFG.price>0?Number(PRO_CFG.price).toFixed(2):'';
+    let p=f('00','01')+f('26',mai)+f('52','0000')+f('53','986')+(amt?f('54',amt):'')+f('58','BR')+f('59',clean(PRO_CFG.pixName,25)||'RECEBEDOR')+f('60',clean(PRO_CFG.pixCity,15)||'BRASIL')+f('62',f('05','***'))+'6304';
+    return p+proCrc16(p);
+}
+function proCopy(txt,okMsg){
+    const done=()=>toast(okMsg);
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done,()=>proCopyOld(txt,done)); else proCopyOld(txt,done);
+}
+function proCopyOld(txt,done){ const t=document.createElement('textarea'); t.value=txt; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); done(); }catch(e){} t.remove(); }
+async function proRenderPix(){
+    const box=$('proBody'); if(!box) return;
+    const price=PRO_CFG.price>0?'R$ '+Number(PRO_CFG.price).toFixed(2).replace('.',','):'';
+    if(PRO.ok){
+        const dev=PRO.dev?PRO.dev.slice(0,10)+'…':'';
+        box.innerHTML='<div class="pro-ok">✓ Pro ativo neste aparelho</div><p class="pro-p">Todos os hinos estão liberados e completos.</p><p class="pro-p pro-small">Código: <b></b><br>Aparelho: '+proTxt(dev)+'<br>O acesso continua mesmo se você desinstalar o app ou limpar os dados (basta digitar o mesmo código neste aparelho, ou ele é restaurado sozinho no app instalado). O código não funciona em outro aparelho.</p>';
+        box.querySelector('b').textContent=PRO.code; return;
+    }
+    const keyOk=PRO_CFG.pixKey&&PRO_CFG.pixKey!=='SUA_CHAVE_PIX';
+    const configured=/^https?:/.test(PRO_CFG.scriptUrl)&&keyOk;
+    let dev=''; try{ dev=await proDevice(); }catch(e){}
+    const mt=proMsgTop();
+    box.innerHTML=(mt?'<div class="pro-top">'+mt+'</div>':'')+
+      '<p class="pro-p">'+proHeadTxt()+'<b>Pro:</b> todos os hinos completos, sem limite. Pagamento único via Pix'+(price?' · <b>'+price+'</b>':'')+'.</p>'+
+      (configured?'':'<p class="pro-p pro-warn">Atenção: o dono do app ainda não preencheu o arquivo pro-config.js (chave Pix e endereço do script).</p>')+
+      '<div class="pro-step"><span>1</span><div><b>Pague via Pix</b><div class="pro-row"><button class="pro-btn" id="proCopyPix">Copiar Pix copia e cola</button><button class="pro-btn sec" id="proCopyKey">Copiar chave</button></div><div class="pro-small" id="proKeyTxt"></div></div></div>'+
+      '<div class="pro-step"><span>2</span><div><b>Envie o comprovante</b><div class="pro-row"><a class="pro-btn" id="proWa" target="_blank" rel="noopener">Enviar no WhatsApp</a></div><div class="pro-small">Você recebe um código de uso único.</div></div></div>'+
+      '<div class="pro-step"><span>3</span><div><b>Digite o código</b><div class="pro-row"><input id="proCode" class="pro-code" placeholder="PRO-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false"><button class="pro-btn" id="proGo">Ativar</button></div><div class="pro-msg" id="proMsg"></div></div></div>';
+    $('proKeyTxt').textContent=keyOk?'Chave: '+PRO_CFG.pixKey+(PRO_CFG.pixName?' · '+PRO_CFG.pixName:''):'';
+    $('proCopyPix').onclick=()=>{ try{ proCopy(proPixPayload(),'Pix copia e cola copiado! Cole no app do seu banco.'); }catch(e){ toast('Erro ao gerar o Pix'); } };
+    $('proCopyKey').onclick=()=>proCopy(String(PRO_CFG.pixKey),'Chave Pix copiada!');
+    const txt='Olá! Paguei o modo Pro do DH Violino Game via Pix. Segue o comprovante. (aparelho '+String(dev).slice(0,10)+')';
+    $('proWa').href='https://wa.me/'+String(PRO_CFG.whatsapp).replace(/\D/g,'')+'?text='+encodeURIComponent(txt);
+    const go=async()=>{
+        const m=$('proMsg'), btn=$('proGo'); m.textContent='Verificando…'; m.className='pro-msg'; btn.disabled=true;
+        const r=await proActivate($('proCode').value);
+        btn.disabled=false;
+        if(r.ok){ toast(r.status==='restaurado'?'Acesso Pro restaurado neste aparelho ✓':'Pro ativado! Obrigado pelo apoio ✓'); proRender(); }
+        else { m.textContent=r.msg; m.className='pro-msg err'; }
+    };
+    $('proGo').onclick=go;
+    $('proCode').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+}
+/*PIX-JS-END*/
+// ---- despacho por canal ----
+function proInit(){
+    if(proPlay()) return proInitPlay();
+    if(typeof proInitPix==='function') return proInitPix();
+    proLoad(); proRefresh();
+}
+function proRender(){
+    if(proPlay()) return proRenderPlay();
+    if(typeof proRenderPix==='function') return proRenderPix();
+}
+// limite de jogo do hino atual, em segundos (Infinity = sem limite)
+function proLimit(){
+    if(PRO.ok) return Infinity;
+    const n=CUR&&CUR.h?CUR.h.n:null; if(n==null||n<=proFree()) return Infinity;
+    if(proAdActive(n)) return Infinity;                 // hino liberado por anúncio (tempo limitado)
+    return PRO_CFG.previewSec;
+}
+// ---- interface ----
+let proReason='', proInGame=false;
+function proRefresh(){
+    const b=$('bPro'); if(b) b.textContent=PRO.ok?'✓ Pro ativo':'⭐ Pro';
+    const h=$('hPro'); if(h) h.textContent=PRO.ok?'✓':'⭐';
+    try{ if($('sHinos').classList.contains('on')) renderHinos(); }catch(e){}
+    try{ if($('mReady').classList.contains('on')) drawReady(); }catch(e){}
+    if($('mPro').classList.contains('on')) proRender();
+}
+function proPaywall(reason){ proReason=reason||''; $('mPro').classList.add('on'); proRender(); }
+function proClose(){
+    $('mPro').classList.remove('on');
+    if(proInGame){
+        proInGame=false;
+        if(G&&G.state==='pause'){
+            if(proLimit()===Infinity) resumeGame();          // liberou: continua de onde parou (com contagem)
+            else { stopGame(); closeModals(); back(); }      // não liberou: volta para a lista de hinos
+        }
+    }
+}
+// chamado pelo jogo quando a prévia grátis termina
+function proLimitHit(){
+    pauseGame(); $('mPause').classList.remove('on');
+    proInGame=true; proPaywall('fim');
+}
+$('bPro').onclick=()=>proPaywall('');
+$('hPro').onclick=()=>proPaywall('');
+$('proClose').onclick=proClose;
+$('mPro').addEventListener('click',e=>{ if(e.target.id==='mPro') proClose(); });
+
+/* ---------- início ---------- */
+$('bPlay').onclick=()=>go('sHinos');
+$('bSet').onclick=()=>go('sSet');
+$('bHow').onclick=()=>$('mHow').classList.add('on');
+$('hClose').onclick=()=>$('mHow').classList.remove('on');
+(function(){const l=store.get('dhg_last',null);if(!l)return;const b=$('bLast');b.style.display='';b.textContent='↻ Continuar: '+String(l.n).padStart(3,'0')+' · '+l.t;b.onclick=()=>openReady(l);})();
+if(!store.get('dhg_seen',false)){setTimeout(()=>{$('mHow').classList.add('on');store.set('dhg_seen',true);},400);}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+setTimeout(()=>{try{initAudio();}catch(e){}},1200);
+proInit();
+
+</script>
+</body>
+</html>
