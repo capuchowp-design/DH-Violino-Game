@@ -91,10 +91,9 @@ h1{margin:6px 0 4px;font-size:2rem;letter-spacing:.5px;background:linear-gradien
 .prog{height:3px;background:#2a1a0e;flex:0 0 auto}
 .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold3),var(--gold2))}
 #staffWrap{flex:0 0 86px;position:relative;background:#0d0a05;border-bottom:1px solid var(--line)}
-#hw{flex:1;position:relative;min-height:0}
+#hw{flex:1;position:relative;min-height:0;touch-action:none;border-top:2px solid var(--gold3)}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #cdn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5.5rem;font-weight:900;color:var(--gold2);text-shadow:0 0 30px #f2a03d;pointer-events:none}
-#fbWrap{flex:0 0 auto;position:relative;height:clamp(210px,42dvh,360px);border-top:2px solid var(--gold3);touch-action:none;padding-bottom:env(safe-area-inset-bottom)}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#000d;border:1px solid var(--gold3);padding:10px 16px;border-radius:12px;font-size:.88rem;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s;max-width:88vw;text-align:center}
 .toast.on{opacity:1}
 .howt{color:var(--txt);text-align:left;font-size:.92rem;line-height:1.5}
@@ -157,8 +156,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   </div>
   <div class="prog"><i id="gProg"></i></div>
   <div id="staffWrap"><canvas id="cStaff"></canvas></div>
-  <div id="hw"><canvas id="cHw"></canvas><div id="cdn"></div></div>
-  <div id="fbWrap"><canvas id="cFb"></canvas></div>
+  <div id="hw"><canvas id="cFb"></canvas><div id="cdn"></div></div>
 </div>
 
 <!-- PRONTO -->
@@ -202,11 +200,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="panel">
     <h2>Como jogar</h2>
     <ol class="howt">
-      <li>As <b>notas descem</b> por 4 pistas, uma para cada <b>corda</b> (Sol · Ré · Lá · Mi). O número mostra o <b>dedo</b> (1 a 4).</li>
-      <li>Embaixo está o <b>braço do violino</b>. O círculo colorido mostra <b>onde</b> pôr o dedo: toque nele e segure.</li>
-      <li>Quando a nota chegar na <b>linha dourada</b>, seu dedo precisa estar no lugar. Não precisa bater: o jogo reconhece a posição.</li>
-      <li><b>Corda solta (0)</b>: toque no círculo vazio acima da pestana (parte de cima da corda).</li>
-      <li>Pode <b>deslizar</b> o dedo de uma nota para a outra, sem soltar.</li>
+      <li>A <b>tela é o braço do violino</b>: as 4 cordas na vertical (Sol · Ré · Lá · Mi), com a pestana em cima.</li>
+      <li>O <b>círculo colorido</b> mostra onde pôr o dedo, com o número do <b>dedo</b> (1 a 4). Toque nele e segure.</li>
+      <li>As próximas notas <b>entram pela direita</b> e deslizam até a corda. Quando chegarem, seu dedo precisa estar no círculo. Não precisa bater: o jogo reconhece a posição.</li>
+      <li>O <b>anel</b> que se fecha e o <b>círculo fraco</b> mostram a nota atual e a seguinte, para você se preparar.</li>
+      <li><b>Corda solta (0)</b>: toque no círculo vazio acima da pestana. Pode <b>deslizar</b> o dedo de uma nota para a outra.</li>
       <li>Ao acertar, a nota <b>toca</b>. As outras vozes tocam sozinhas ao fundo. Tenor e baixo sobem uma oitava.</li>
     </ol>
     <div class="row"><button class="big" id="hClose">Entendi</button></div>
@@ -691,8 +689,8 @@ $('rGo').onclick=()=>{ $('mReady').classList.remove('on'); startGame(); };
 /* ---------- jogo ---------- */
 let cH,xH,cS,xS,dpr=1,rafId=0,pumpId=0,wake=null;
 function sizeCanvases(){dpr=Math.min(window.devicePixelRatio||1,2.5);
-    ['cHw','cStaff','cFb'].forEach(id=>{const c=$(id),r=c.getBoundingClientRect();c.width=Math.max(2,Math.round(r.width*dpr));c.height=Math.max(2,Math.round(r.height*dpr));});
-    cH=$('cHw');xH=cH.getContext('2d');cS=$('cStaff');xS=cS.getContext('2d');}
+    ['cStaff','cFb'].forEach(id=>{const c=$(id),r=c.getBoundingClientRect();c.width=Math.max(2,Math.round(r.width*dpr));c.height=Math.max(2,Math.round(r.height*dpr));});
+    cS=$('cStaff');xS=cS.getContext('2d');}
 window.addEventListener('resize',()=>{if($('sGame').classList.contains('on')&&G.state!=='idle')sizeCanvases();});
 async function unlockAudio(){
     if(window.Tone){try{await Tone.start();}catch(e){}}else{try{await rawCtx().resume();}catch(e){}}
@@ -766,7 +764,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&G.state
 // O que vale é a POSIÇÃO do dedo (corda + altura) na hora da nota. Corda solta = tocar o círculo acima da pestana.
 const HW=()=>WIN[S.win]||1, PTOL={estreita:.5,normal:.7,larga:1};
 function haptic(ms){if(S.vibrate&&navigator.vibrate){try{navigator.vibrate(ms);}catch(e){}}}
-function FBG(){const e=$('cFb'),W=e.clientWidth,H=e.clientHeight,bw=W*.94/4,yN=H*.2,yE=H*.95;
+function FBG(){const e=$('cFb'),W=e.clientWidth,H=e.clientHeight,bw=W*.94/4,yN=H*.13,yE=H*.93;
     return{W,H,bw,yN,yE,xs:i=>W/2+(i-1.5)*bw,yo:o=>yN+(yE-yN)*Math.min(o,OFFMAX)/OFFMAX};}
 function fbTouch(e){const r=$('cFb').getBoundingClientRect(),g=FBG(),x=e.clientX-r.left,y=e.clientY-r.top;
     let s=0,b=1e9;for(let i=0;i<4;i++){const d=Math.abs(x-g.xs(i));if(d<b){b=d;s=i;}}
@@ -795,7 +793,7 @@ function hitNote(n,perfect){
     G.score+=(perfect?300:150)*mult;
     playNote(toneName(n.m),Math.max(.15,n.d),undefined,Math.min(1,.95*(n.vel+.2)));
     G.pops.push({txt:perfect?'Perfeito!':'Bom',c:perfect?'#ffe2b8':'#4be3b5',t:tNow()});
-    G.fx.push({s:n.s,t:tNow()});
+    G.fx.push({s:n.s,o:n.off,t:tNow()});
     haptic(12);updateHud();
 }
 function updateHud(){
@@ -818,7 +816,7 @@ function frame(){
     checkPosition(t);
     const maxW=.22*HW();
     G.chart.forEach(n=>{ if(n.st===0&&t>n.t+maxW){n.st=2;G.misses++;G.combo=0;G.pops.push({txt:'Errou',c:'#ff6b6b',t});updateHud();} });
-    drawHighway(t);drawFb(t);drawStaff(t);
+    drawFb(t);drawStaff(t);
     $('gProg').style.width=Math.max(0,Math.min(100,t/G.end*100))+'%';
     const rest=G.cdEnd-t;$('cdn').textContent=rest>0?Math.ceil(rest):'';
     if(t>G.end){finishGame();return;}
@@ -826,54 +824,50 @@ function frame(){
     rafId=requestAnimationFrame(frame);
 }
 const FCOL=['#8fd3ff','#ff7a6b','#ffb04a','#7be39a','#c79bff'];   // cor por dedo: 0 solta, 1..4
-function drawHighway(t){
-    const c=xH,W=cH.width/dpr,H=cH.height/dpr,LA=LOOK[S.fall]||2.6;
-    c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
-    const yTop=H*.03,yHit=H-8,bw=W*.94/4,cx=W/2,sc=d=>.5+.5*d,yy=d=>yTop+(yHit-yTop)*Math.pow(Math.max(0,d),1.45),xl=(i,d)=>cx+(i-1.5)*bw*sc(d);
-    const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#050403');g.addColorStop(1,'#20120a');c.fillStyle=g;
-    c.beginPath();c.moveTo(cx-2*bw*sc(0),yy(0));c.lineTo(cx+2*bw*sc(0),yy(0));c.lineTo(cx+2*bw,yy(1));c.lineTo(cx-2*bw,yy(1));c.closePath();c.fill();
-    for(let i=0;i<4;i++){const on=G.touch&&G.touch.s===i;c.strokeStyle=on?'#ffe2b8cc':'#f2a03d55';c.lineWidth=(on?3:1.6)*(1.5-i*.15);c.beginPath();c.moveTo(xl(i,0),yy(0));c.lineTo(xl(i,1),yy(1));c.stroke();}
-    const beat=60/G.bpm;c.strokeStyle='#f2a03d22';c.lineWidth=1;
-    for(let b=Math.ceil(t/beat);b*beat<=t+LA;b++){const d=1-(b*beat-t)/LA;if(d<0||d>1.05)continue;const y=yy(d);c.beginPath();c.moveTo(cx-2*bw*sc(d),y);c.lineTo(cx+2*bw*sc(d),y);c.stroke();}
-    c.save();c.beginPath();c.rect(0,0,W,yHit+10);c.clip();
-    for(const n of G.chart){
-        const te=n.t+n.d;if(te<t-.5||n.t>t+LA)continue;
-        const dB=Math.min(1-(n.t-t)/LA,1.1),dT=Math.min(1-(Math.min(te,n.t+.9)-t)/LA,dB-.05),yB=yy(dB),s=sc(dB),x=xl(n.s,dB),w=bw*.4*s,hh=Math.max(16,34*s);
-        c.globalAlpha=n.st===1?Math.max(.12,1-(t-n.t)/.3):n.st===2?.4:1;
-        const col=n.st===1?'#7df0d0':n.st===2?'#6b5a52':FCOL[n.f];
-        c.fillStyle=col+'88';c.fillRect(x-w*.16,yy(dT),w*.32,Math.max(0,yB-hh-yy(dT)));
-        c.fillStyle=col;c.strokeStyle='#fff8';c.lineWidth=1.5;c.beginPath();c.roundRect?c.roundRect(x-w,yB-hh,w*2,hh,hh*.3):c.rect(x-w,yB-hh,w*2,hh);c.fill();c.stroke();
-        c.fillStyle='#1b0f06';c.font='800 '+Math.max(10,hh*.5)+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n.f+' · '+noteName(n.m),x,yB-hh/2+1);c.textBaseline='alphabetic';
-    }
-    c.restore();c.globalAlpha=1;
-    const hg=c.createLinearGradient(0,0,W,0);hg.addColorStop(0,'#f2a03d00');hg.addColorStop(.15,'#ffe2b8');hg.addColorStop(.85,'#ffe2b8');hg.addColorStop(1,'#f2a03d00');
-    c.fillStyle=hg;c.shadowColor='#ffb84a';c.shadowBlur=14;c.fillRect(0,yHit-2,W,4);c.shadowBlur=0;
-    G.fx=G.fx.filter(f=>t-f.t<.45);
-    G.fx.forEach(f=>{const p=(t-f.t)/.45;c.strokeStyle='rgba(255,226,184,'+(1-p)+')';c.lineWidth=4*(1-p);c.beginPath();c.ellipse(xl(f.s,1),yHit-4,bw*.25+bw*.5*p,bw*.1+bw*.2*p,0,0,6.3);c.stroke();});
-    G.pops=G.pops.filter(p=>t-p.t<.7);const lp=G.pops[G.pops.length-1];
-    if(lp){const p=(t-lp.t)/.7;c.globalAlpha=1-p;c.fillStyle=lp.c;c.font='800 22px system-ui';c.textAlign='center';c.fillText(lp.txt,W/2,yHit-bw*.7-p*24);c.globalAlpha=1;}
-    if(G.combo>=5){c.fillStyle='#ffe2b8';c.font='800 15px system-ui';c.textAlign='left';c.fillText('COMBO '+G.combo,10,22);}
-}
-// braço do violino: mostra ONDE pôr o dedo (próxima nota em destaque, a seguinte mais fraca)
+// A TELA INTEIRA é o braço do violino (pestana em cima, cordas na vertical).
+// As notas entram pela lateral direita, na altura exata do dedo, e chegam na corda na hora de tocar.
 function drawFb(t){
-    const c=$('cFb').getContext('2d'),g=FBG(),{W,H,bw,yN,yE}=g;
+    const c=$('cFb').getContext('2d'),g=FBG(),{W,H,bw,yN,yE}=g,LA=LOOK[S.fall]||2.6,maxW=.22*HW();
     c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
-    c.fillStyle='#120a06';c.fillRect(0,0,W,H);
-    c.fillStyle='#2b1a10';c.fillRect(W*.03,yN,W*.94,yE-yN+10);
+    const bg=c.createLinearGradient(0,0,W,0);bg.addColorStop(0,'#0f0805');bg.addColorStop(.5,'#1b0f09');bg.addColorStop(1,'#0f0805');c.fillStyle=bg;c.fillRect(0,0,W,H);
+    c.fillStyle='#24150d';c.fillRect(W*.03,yN,W*.94,H-yN);
     c.fillStyle='#ead9bd';c.fillRect(W*.03,yN-4,W*.94,5);
-    c.strokeStyle='#ffffff12';c.lineWidth=1;
+    c.strokeStyle='#ffffff10';c.lineWidth=1;
     for(let o=1;o<=9;o++){const y=g.yo(o);c.beginPath();c.moveTo(W*.03,y);c.lineTo(W*.97,y);c.stroke();}
     const CS=['#c58a3d','#cfd3d6','#d9dde0','#eef1f3'],NM=['Sol','Ré','Lá','Mi'];
-    for(let i=0;i<4;i++){const x=g.xs(i),on=G.touch&&G.touch.s===i;c.strokeStyle=on?'#fff':CS[i];c.lineWidth=[3.4,2.8,2.2,1.7][i]+(on?1:0);c.beginPath();c.moveTo(x,yN-4);c.lineTo(x,yE+10);c.stroke();
-        c.fillStyle='#a89d83';c.font='700 11px system-ui';c.textAlign='center';c.fillText(NM[i],x,11);}
-    const maxW=.22*HW(),list=[];
+    for(let i=0;i<4;i++){const x=g.xs(i),on=G.touch&&G.touch.s===i;c.strokeStyle=on?'#fff':CS[i];c.lineWidth=[4,3.2,2.5,1.9][i]+(on?1:0);c.beginPath();c.moveTo(x,yN-4);c.lineTo(x,H);c.stroke();
+        c.fillStyle='#a89d83';c.font='700 11px system-ui';c.textAlign='center';c.fillText(NM[i],x,H-6);}
+    const list=[];
     for(const n of G.chart){if(n.st!==0||n.t+maxW<t)continue;list.push(n);if(list.length===2)break;}
-    list.forEach((n,k)=>{const x=g.xs(n.s),y=n.off?g.yo(n.off):yN-15,dt=Math.max(0,n.t-t),R=Math.min(bw*.34,22)*(k?.8:1),col=FCOL[n.f];
-        c.globalAlpha=k?.4:1;
-        if(!k){c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.arc(x,y,R+3+Math.min(dt,1.2)*14,0,6.3);c.stroke();}
-        c.fillStyle=n.off?col:'#00000000';c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.arc(x,y,R,0,6.3);if(n.off)c.fill();else c.stroke();
-        c.fillStyle=n.off?'#1b0f06':col;c.font='800 '+R*1.05+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n.f,x,y+1);c.textBaseline='alphabetic';c.globalAlpha=1;});
-    if(G.touch){const q=G.touch,ok=list[0]&&onPos(list[0]);c.fillStyle=ok?'#7df0d055':'#ffffff22';c.strokeStyle=ok?'#7df0d0':'#fff';c.lineWidth=3;c.beginPath();c.arc(q.x,q.y,17,0,6.3);c.fill();c.stroke();}
+    const ty=n=>n.off?g.yo(n.off):yN*.5;
+    // trilha tracejada até as duas próximas notas
+    c.setLineDash([4,7]);c.lineWidth=2;
+    list.forEach((n,k)=>{c.strokeStyle=FCOL[n.f]+(k?'33':'66');c.beginPath();c.moveTo(g.xs(n.s),ty(n));c.lineTo(W,ty(n));c.stroke();});
+    c.setLineDash([]);
+    const R=Math.min(bw*.34,24);
+    // notas deslizando da direita (as mais próximas por cima)
+    for(let i=G.chart.length-1;i>=0;i--){const n=G.chart[i],dt=n.t-t;
+        if(dt>LA)continue;if(n.t<t-.7)break;
+        if(n.st===1&&t-n.t>.3)continue;if(n.st===2&&t-n.t>.6)continue;
+        const x0=g.xs(n.s),y=ty(n),p=Math.max(0,dt)/LA,x=x0+(W+R-x0)*p,sp=(W+R-x0)/LA,tail=Math.min(n.d*sp,W*.4),col=n.st===2?'#6b5a52':FCOL[n.f];
+        c.globalAlpha=(n.st===1?Math.max(0,1-(t-n.t)/.3):n.st===2?Math.max(0,1-(t-n.t-.25)/.35):Math.min(1,(LA-dt)/.35))*(n.st===0&&dt>0?.9:1);
+        c.fillStyle=col+'66';c.beginPath();c.roundRect?c.roundRect(x,y-R*.32,tail,R*.64,R*.3):c.rect(x,y-R*.32,tail,R*.64);c.fill();
+        c.fillStyle=n.st===1?'#7df0d0':col;c.strokeStyle='#fff9';c.lineWidth=1.5;c.beginPath();c.arc(x,y,R*.82,0,6.3);c.fill();c.stroke();
+        c.fillStyle='#1b0f06';c.font='800 '+R*.95+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n.f,x,y+1);c.textBaseline='alphabetic';
+        c.fillStyle='#ffe2b8cc';c.font='700 11px system-ui';c.fillText(noteName(n.m),x,y-R*.82-4);
+    }
+    c.globalAlpha=1;
+    // alvo: onde pôr o dedo (próxima nota forte, a seguinte fraca)
+    list.forEach((n,k)=>{const x=g.xs(n.s),y=ty(n),dt=Math.max(0,n.t-t),r=R*(k?.85:1),col=FCOL[n.f];
+        c.globalAlpha=k?.45:1;
+        if(!k){c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.arc(x,y,r+3+Math.min(dt,1.2)*14,0,6.3);c.stroke();}
+        c.strokeStyle=col;c.lineWidth=3;c.fillStyle=col+(n.off?'cc':'22');c.beginPath();c.arc(x,y,r,0,6.3);c.fill();c.stroke();
+        c.fillStyle=n.off?'#1b0f06':col;c.font='800 '+r*1.05+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n.f,x,y+1);c.textBaseline='alphabetic';c.globalAlpha=1;});
+    if(G.touch){const q=G.touch,ok=list[0]&&onPos(list[0]);c.fillStyle=ok?'#7df0d055':'#ffffff22';c.strokeStyle=ok?'#7df0d0':'#fff';c.lineWidth=3;c.beginPath();c.arc(q.x,q.y,18,0,6.3);c.fill();c.stroke();}
+    G.fx=G.fx.filter(f=>t-f.t<.45);
+    G.fx.forEach(f=>{const p=(t-f.t)/.45,x=g.xs(f.s),y=f.o?g.yo(f.o):yN*.5;c.strokeStyle='rgba(255,226,184,'+(1-p)+')';c.lineWidth=4*(1-p);c.beginPath();c.arc(x,y,R+R*1.4*p,0,6.3);c.stroke();});
+    G.pops=G.pops.filter(p=>t-p.t<.7);const lp=G.pops[G.pops.length-1];
+    if(lp){const p=(t-lp.t)/.7;c.globalAlpha=1-p;c.fillStyle=lp.c;c.font='800 22px system-ui';c.textAlign='center';c.fillText(lp.txt,W/2,H-28-p*24);c.globalAlpha=1;}
 }
 /* partitura em clave de Sol (violino: escrita = som) */
 const LETT=[0,0,1,2,2,3,3,4,4,5,6,6];

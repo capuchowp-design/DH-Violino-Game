@@ -2,8 +2,8 @@
 
 Game estilo Guitar Hero para aprender os hinos no violino.
 
-- **Pista:** 4 colunas, uma por corda (Sol · Ré · Lá · Mi). Cada nota mostra o **dedo** (1 a 4; 0 = corda solta) e o nome da nota.
-- **Braço do violino (embaixo):** as 4 cordas na tela. O círculo colorido mostra **onde pôr o dedo** (próxima nota forte, a seguinte fraca; o anel se fecha até a hora). Toque e segure. Pode deslizar de uma nota para outra.
+- **Tela = braço do violino:** 4 cordas na vertical (Sol · Ré · Lá · Mi), pestana em cima. O círculo colorido com o número do dedo (0 a 4) mostra **onde pôr o dedo**; o anel se fecha até a hora e a nota seguinte aparece mais fraca.
+- **Notas pela lateral:** cada nota entra pela direita, na altura exata do dedo, e desliza até a corda; a cauda mostra a duração. Pode deslizar o dedo de uma nota para outra.
 - **Corda solta (0):** toque no círculo vazio acima da pestana.
 - **Reconhecimento por posição:** na hora da nota, o dedo precisa estar na corda e na altura certas. Não precisa "bater".
 - **Digitação:** mesma regra do app DigitaHinos Violino (1ª posição, um dedo para cada nota natural; sustenido/bemol mantém o dedo e muda só a altura). Respeita a armadura de cada hino.
