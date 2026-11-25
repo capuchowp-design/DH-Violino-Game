@@ -200,11 +200,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="panel">
     <h2>Como jogar</h2>
     <ol class="howt">
-      <li>A <b>tela é o braço do violino</b>: as 4 cordas na vertical (Sol · Ré · Lá · Mi), com a pestana em cima.</li>
+      <li>A <b>tela é o braço do violino</b>: as 4 cordas na vertical (Sol · Ré · Lá · Mi), com a pestana em cima, <b>bolinhas brancas</b> nas notas e <b>fitas azuis</b> de referência, como nos violinos de iniciante.</li>
       <li>O <b>círculo colorido</b> mostra onde pôr o dedo, com o número do <b>dedo</b> (1 a 4). Toque nele e segure.</li>
       <li>As próximas notas <b>entram pela direita</b> e deslizam até a corda. Quando chegarem, seu dedo precisa estar no círculo. Não precisa bater: o jogo reconhece a posição.</li>
       <li>O <b>anel</b> que se fecha e o <b>círculo fraco</b> mostram a nota atual e a seguinte, para você se preparar.</li>
-      <li><b>Corda solta (0)</b>: toque no círculo vazio acima da pestana. Pode <b>deslizar</b> o dedo de uma nota para a outra.</li>
+      <li><b>Corda solta (0)</b>: como no violino de verdade, <b>não ponha o dedo</b> nessa corda. Pode <b>deslizar</b> o dedo de uma nota para a outra.</li>
       <li>Ao acertar, a nota <b>toca</b>. As outras vozes tocam sozinhas ao fundo. Tenor e baixo sobem uma oitava.</li>
     </ol>
     <div class="row"><button class="big" id="hClose">Entendi</button></div>
@@ -769,7 +769,8 @@ function FBG(){const e=$('cFb'),W=e.clientWidth,H=e.clientHeight,bw=W*.94/4,yN=H
 function fbTouch(e){const r=$('cFb').getBoundingClientRect(),g=FBG(),x=e.clientX-r.left,y=e.clientY-r.top;
     let s=0,b=1e9;for(let i=0;i<4;i++){const d=Math.abs(x-g.xs(i));if(d<b){b=d;s=i;}}
     return{s,x,y,off:y<g.yN-2?-1:Math.max(0,(y-g.yN)/(g.yE-g.yN)*OFFMAX)};}
-function onPos(n){const q=G.touch;if(!q||q.s!==n.s)return false;return n.off===0?q.off<=.4:Math.abs(q.off-n.off)<=(PTOL[S.ptol]||.7);}
+function onPos(n){const q=G.touch;if(n.off===0)return !q||q.s!==n.s||q.off<=.4;   // solta = nenhum dedo nessa corda
+    if(!q||q.s!==n.s)return false;return Math.abs(q.off-n.off)<=(PTOL[S.ptol]||.7);}
 // modo fácil: qualquer toque perto da hora acerta a nota mais próxima
 function easyTap(){
     const t=tNow(),maxW=.22*HW(),pw=.075*HW();
@@ -832,11 +833,16 @@ function drawFb(t){
     const bg=c.createLinearGradient(0,0,W,0);bg.addColorStop(0,'#0f0805');bg.addColorStop(.5,'#1b0f09');bg.addColorStop(1,'#0f0805');c.fillStyle=bg;c.fillRect(0,0,W,H);
     c.fillStyle='#24150d';c.fillRect(W*.03,yN,W*.94,H-yN);
     c.fillStyle='#ead9bd';c.fillRect(W*.03,yN-4,W*.94,5);
-    c.strokeStyle='#ffffff10';c.lineWidth=1;
-    for(let o=1;o<=9;o++){const y=g.yo(o);c.beginPath();c.moveTo(W*.03,y);c.lineTo(W*.97,y);c.stroke();}
+    // fitas azuis (como nos violinos de iniciante): faixas atravessando o braço
+    c.strokeStyle='#2fb4ff';c.lineWidth=3;c.shadowColor='#2fb4ff';c.shadowBlur=6;
+    for(const o of [1.5,4.5,7.5]){const y=g.yo(o);c.beginPath();c.moveTo(W*.03,y);c.lineTo(W*.97,y);c.stroke();}
+    c.shadowBlur=0;
     const CS=['#c58a3d','#cfd3d6','#d9dde0','#eef1f3'],NM=['Sol','Ré','Lá','Mi'];
     for(let i=0;i<4;i++){const x=g.xs(i),on=G.touch&&G.touch.s===i;c.strokeStyle=on?'#fff':CS[i];c.lineWidth=[4,3.2,2.5,1.9][i]+(on?1:0);c.beginPath();c.moveTo(x,yN-4);c.lineTo(x,H);c.stroke();
         c.fillStyle='#a89d83';c.font='700 11px system-ui';c.textAlign='center';c.fillText(NM[i],x,H-6);}
+    // bolinhas brancas: posição das notas naturais (1ª posição) em cada corda
+    c.fillStyle='#f4f1e8';c.strokeStyle='#0008';c.lineWidth=1;
+    for(let i=0;i<4;i++)for(let o=1;o<=8;o++){const m=VOPEN[i]+o;if(PCL.indexOf(m%12)<0)continue;c.beginPath();c.arc(g.xs(i),g.yo(o),Math.max(4,bw*.07),0,6.3);c.fill();c.stroke();}
     const list=[];
     for(const n of G.chart){if(n.st!==0||n.t+maxW<t)continue;list.push(n);if(list.length===2)break;}
     const ty=n=>n.off?g.yo(n.off):yN*.5;
@@ -861,7 +867,7 @@ function drawFb(t){
     list.forEach((n,k)=>{const x=g.xs(n.s),y=ty(n),dt=Math.max(0,n.t-t),r=R*(k?.85:1),col=FCOL[n.f];
         c.globalAlpha=k?.45:1;
         if(!k){c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.arc(x,y,r+3+Math.min(dt,1.2)*14,0,6.3);c.stroke();}
-        c.strokeStyle=col;c.lineWidth=3;c.fillStyle=col+(n.off?'cc':'22');c.beginPath();c.arc(x,y,r,0,6.3);c.fill();c.stroke();
+        c.strokeStyle=col;c.lineWidth=3;c.fillStyle=col+(n.off?'cc':'22');if(!n.off)c.setLineDash([5,5]);c.beginPath();c.arc(x,y,r,0,6.3);c.fill();c.stroke();c.setLineDash([]);
         c.fillStyle=n.off?'#1b0f06':col;c.font='800 '+r*1.05+'px system-ui';c.textAlign='center';c.textBaseline='middle';c.fillText(n.f,x,y+1);c.textBaseline='alphabetic';c.globalAlpha=1;});
     if(G.touch){const q=G.touch,ok=list[0]&&onPos(list[0]);c.fillStyle=ok?'#7df0d055':'#ffffff22';c.strokeStyle=ok?'#7df0d0':'#fff';c.lineWidth=3;c.beginPath();c.arc(q.x,q.y,18,0,6.3);c.fill();c.stroke();}
     G.fx=G.fx.filter(f=>t-f.t<.45);
